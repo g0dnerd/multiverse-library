@@ -1,0 +1,46 @@
+{
+  "name": "prisma-schema",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/prisma-schema/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project prisma-schema --web",
+  "targets": {
+    "prisma": {
+      "command": "prisma",
+      "options": {
+        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+      }
+    },
+    "migrate": {
+      "command": "prisma migrate dev",
+      "options": {
+        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+      }
+    },
+    "generate-types": {
+      "command": "prisma generate",
+      "options": {
+        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+      }
+    },
+    "reset": {
+      "command": "prisma migrate reset",
+      "options": {
+        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+      }
+    },
+    "start": {
+      "command": "prisma dev",
+      "options": {
+        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+      }
+    },
+    "seed": {
+      "command": "npx ts-node libs/prisma-schema/src/seed.ts",
+      "options": {
+        "cwd": "/home/paul/misc/multiverse-library"
+      }
+    }
+  }
+}
