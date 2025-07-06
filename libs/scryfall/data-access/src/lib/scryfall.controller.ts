@@ -1,9 +1,9 @@
 import { Controller, Get, HttpException, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { map, mergeMap } from 'rxjs';
 
 import { ScryfallService } from './scryfall.service';
-import { BulkDataType as ScryfallBulkDataType } from './models/bulk';
+import { BulkData, BulkDataType as ScryfallBulkDataType } from './models/bulk';
 import { BulkDataType } from '@multiverse-library/prisma-client';
 
 @Controller('scryfall')
@@ -11,12 +11,20 @@ import { BulkDataType } from '@multiverse-library/prisma-client';
 export class ScryfallController {
   constructor(private readonly scryfallService: ScryfallService) {}
 
+  /**
+   * Scryfall Bulk Data URIs are ephemeral and thus need to be fetched programatically.
+   * (https://scryfall.com/docs/api/bulk-data)
+   * This does so and saves the link for the 'oracle_cards' bulk data set in the DB.
+   * This set contains each card on Scryfall once and in one language, which is what we want.
+   */
   @Post('update-bulk-uri')
   updateScryfallBulkUri() {
+    // Fetch all bulk URIs
     return this.scryfallService.fetchBulkUris().pipe(
-      map((uris) => {
+      map((uris: BulkData[]) => {
+        // Take only the 'oracle_cards' URI
         const oracleCardUri = uris.find(
-          (u) => u.type === ScryfallBulkDataType.OracleCards
+          (uri) => uri.type === ScryfallBulkDataType.OracleCards
         );
         if (!oracleCardUri) {
           throw new HttpException(
@@ -26,6 +34,7 @@ export class ScryfallController {
         }
         return oracleCardUri;
       }),
+      // Let the service write the URI to DB.
       mergeMap((oracleCards) =>
         this.scryfallService.createBulkUri({
           bulkDataType: BulkDataType.ORACLE_CARDS,
@@ -36,6 +45,7 @@ export class ScryfallController {
   }
 
   @Get('bulk-uri')
+  @ApiOkResponse({ type: String })
   async getBulkUri() {
     const [uri] = await this.scryfallService.bulkUris({
       take: 1,
@@ -53,6 +63,6 @@ export class ScryfallController {
 
   @Post('enrich-card-images')
   enrichCardImages() {
-    this.scryfallService.fetchCardImages();
+    this.scryfallService.fetchCardsForEnrichment();
   }
 }

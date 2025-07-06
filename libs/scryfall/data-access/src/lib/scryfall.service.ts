@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import {
@@ -22,8 +22,9 @@ import {
 import { Readable } from 'stream';
 import * as StreamArray from 'stream-json/streamers/StreamArray';
 
-import { BulkDataItems } from './models/bulk';
 import { Prisma, PrismaService } from '@multiverse-library/prisma-client';
+import { CreateCardDto } from '@multiverse-library/data-access-cards';
+import { BulkDataItems } from './models/bulk';
 import { ScryfallCard } from './models/card';
 import { ScryfallPrints } from './models/prints';
 
@@ -47,6 +48,7 @@ export class ScryfallService {
       .pipe(map((res: AxiosResponse<BulkDataItems>) => res.data.data));
   }
 
+  // Writes a bulk data URI to the DB.
   createBulkUri(data: Prisma.BulkUrlCreateInput) {
     return this.prisma.bulkUrl.create({
       data,
@@ -65,15 +67,25 @@ export class ScryfallService {
   }
 
   /**
-   * Queries the Scryfall API for the list of prints from a card'ss `printsSearchUri`.
-   * Writes the oldest available image URI for each card face into the DB.
+   * Queries the Scryfall API for the list of prints from a card's `printsSearchUri`.
+   * Writes the oldest available (e.g., the original) image URI for each card face into the DB.
    */
-  async fetchCardImages() {
+  async fetchCardsForEnrichment() {
+    const numCardsInDb = await this.prisma.card.count();
+    this.logger.log(
+      `Starting card image enrichment for ${numCardsInDb} cards.`
+    );
+
+    // Work in batches of 100 images
     const pageSize = 100;
     let lastId = 0;
+
+    // NOTE: The type is manually defined like this since Partial<Card> doesn't work
+    // with the `prisma.card.findMany` invocation. It's not nice though.
     let page: { id: number; printsSearchUri: string; isDoubleFaced: boolean }[];
 
     do {
+      // Find the next 100 cards, only select strictly necessary fields
       page = await this.prisma.card.findMany({
         where: { id: { gt: lastId } },
         orderBy: { id: 'asc' },
@@ -95,7 +107,7 @@ export class ScryfallService {
         from(page).pipe(
           mergeMap(
             (card) =>
-              this.fetchAndSaveCardFaces(
+              this.enrichCardImages(
                 card.id,
                 card.printsSearchUri,
                 card.isDoubleFaced
@@ -118,32 +130,46 @@ export class ScryfallService {
    * Fetch the printsSearchUri, pick the last (oldest) element in the returned
    * array, grab its card faces' image_uris.small, and update the DB.
    */
-  private fetchAndSaveCardFaces(
+  private enrichCardImages(
     cardId: number,
     printsSearchUri: string,
     isDfc: boolean
   ) {
-    // Delay to not blast the Scryfall API too much
+    // 300 Millisecond delay to not blast the Scryfall API too much
     const delay = 300;
+
     return of(null).pipe(
       delayWhen(() => timer(delay)),
       mergeMap(() => this.http.get(printsSearchUri)),
       map((res: AxiosResponse<ScryfallPrints>) => {
-        const arr = res.data.data;
-        if (!Array.isArray(arr) || arr.length === 0) {
-          throw new Error('Empty printsSearchUri response');
+        // Get the array of prints from the response
+        const prints = res.data.data;
+
+        // Fail open if the response has no print data
+        if (!Array.isArray(prints) || prints.length === 0) {
+          const errorMsg = `Empty prints data response for card with ID ${cardId}`;
+          this.logger.error(errorMsg);
+          throw new HttpException(errorMsg, 500);
         }
-        return arr[arr.length - 1];
+
+        // Return print data for the oldest image available
+        return prints[prints.length - 1];
       }),
-      mergeMap((lastPrint) => {
+      mergeMap((oldestPrint: ScryfallCard) => {
         if (isDfc) {
-          const faces = lastPrint.card_faces;
+          const faces = oldestPrint.card_faces;
           if (
             !faces ||
             !Array.isArray(faces) ||
             !faces[0].image_uris?.normal ||
             !faces[1].image_uris?.normal
           ) {
+            this.logger.warn(
+              `Could not find faces for card ${oldestPrint.name}.`
+            );
+            this.logger.warn(
+              `Assuming it's a token or otherwise non-standalone card, deleting it from the DB.`
+            );
             this.prisma.card.delete({ where: { id: cardId } });
             return of(null);
           }
@@ -154,16 +180,15 @@ export class ScryfallService {
             this.prisma.card.update({
               where: { id: cardId },
               data: { frontFaceImg, backFaceImg },
+              select: {},
             })
           );
         } else {
-          const uris = lastPrint.image_uris;
+          const uris = oldestPrint.image_uris;
           if (!uris || !uris.normal) {
-            throw new Error(
-              `Unexpected card_faces format on print ${JSON.stringify(
-                lastPrint
-              )}: (isDfc: ${isDfc})`
-            );
+            const errorMsg = `Could not find image URIs or normal size URI didn't exist for card ${oldestPrint.name}.`;
+            this.logger.error(errorMsg);
+            throw new HttpException(errorMsg, 500);
           }
 
           const frontFaceImg = uris.normal;
@@ -171,12 +196,13 @@ export class ScryfallService {
             this.prisma.card.update({
               where: { id: cardId },
               data: { frontFaceImg },
+              select: {},
             })
           );
         }
       }),
       catchError((err) => {
-        console.error(`Error (url: ${printsSearchUri})`, err.stack);
+        this.logger.error(`Error (url: ${printsSearchUri})`, err.stack);
         throw err;
       })
     );
@@ -204,15 +230,16 @@ export class ScryfallService {
         // Process one batch at a time
         concatMap((batch: ScryfallCard[]) =>
           of(batch).pipe(
-            mergeMap((items) => {
-              const data = items
+            mergeMap((cards) => {
+              const createCardDtos = cards
                 .filter((card) => card.set_type !== 'token')
-                .map((card) => this.mapToScryfall(card));
+                .map((card) => this.mapFromScryfallToDto(card));
               return this.prisma.card.createMany({
-                data,
+                data: createCardDtos,
                 skipDuplicates: true,
               });
             }),
+            // Retry failed batches twice after 1000 and 2000 ms.
             retry({
               count: 2,
               delay: (err, retryCount) => {
@@ -232,6 +259,7 @@ export class ScryfallService {
               );
               throw err;
             }),
+            // Delay of 500ms between transactions to not overwhelm DB.
             delay(500)
           )
         ),
@@ -251,7 +279,8 @@ export class ScryfallService {
       });
   }
 
-  private mapToScryfall(card: ScryfallCard) {
+  // Maps a Scryfall card object into a database-friendly DTO to create a card.
+  private mapFromScryfallToDto(card: ScryfallCard): CreateCardDto {
     return {
       name: card.name,
       scryfallId: card.id,

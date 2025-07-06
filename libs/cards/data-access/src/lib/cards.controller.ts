@@ -1,19 +1,16 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { CardsService } from './cards.service';
+import { CardEntity } from './models/card.entity';
 
 @Controller('cards')
 @ApiTags('cards')
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
-  @Get()
-  getCards() {
-    return this.cardsService.cards({ take: 20 });
-  }
-
   @Get(':searchString')
+  @ApiOkResponse({ type: CardEntity, isArray: true })
   getFilteredCards(@Param('searchString') searchString: string) {
     return this.cardsService.cards({
       where: {
