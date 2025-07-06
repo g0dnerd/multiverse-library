@@ -1,4 +1,5 @@
 import { ScryfallColors } from './colors';
+import { ImageUris } from './image';
 
 export interface ScryfallCardFace {
   artist: string;
@@ -9,7 +10,7 @@ export interface ScryfallCardFace {
   defense?: string;
   flavor_text?: string;
   illustration_id?: string;
-  image_uris?: Object;
+  image_uris?: ImageUris;
   layout?: string;
   loyalty?: string;
   mana_cost: string;

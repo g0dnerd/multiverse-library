@@ -1,7 +1,13 @@
+export interface BulkDataItems {
+  object: 'list';
+  has_more: boolean;
+  data: BulkData[];
+}
+
 export interface BulkData {
   id: string;
   uri: string;
-  type: string;
+  type: BulkDataType;
   name: string;
   description: string;
   download_uri: string;
@@ -9,4 +15,12 @@ export interface BulkData {
   size: number;
   content_type: string;
   content_encoding: string;
+}
+
+export enum BulkDataType {
+  OracleCards = 'oracle_cards',
+  UniqueArtwork = 'unique_artwork',
+  DefaultCards = 'default_cards',
+  AllCards = 'all_cards',
+  Rulings = 'rulings',
 }
