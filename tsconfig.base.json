@@ -15,11 +15,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@multiverse-library/cards/data-access": [
+      "@multiverse-library/data-access-cards": [
         "libs/cards/data-access/src/index.ts"
       ],
       "@multiverse-library/prisma-client": ["libs/prisma-client/src/index.ts"],
-      "@multiverse-library/scryfall/data-access": [
+      "@multiverse-library/data-access-scryfall": [
         "libs/scryfall/data-access/src/index.ts"
       ]
     }
