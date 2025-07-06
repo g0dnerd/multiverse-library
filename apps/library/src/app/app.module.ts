@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { CardDataAccessModule } from '@multiverse-library/cards/data-access';
+import { CardDataAccessModule } from '@multiverse-library/data-access-cards';
+import { ScryfallModule } from '@multiverse-library/data-access-scryfall';
 import { AppController } from './app.controller';
 
 @Module({
@@ -11,6 +12,7 @@ import { AppController } from './app.controller';
       ignoreEnvFile: false,
     }),
     CardDataAccessModule,
+    ScryfallModule,
   ],
   controllers: [AppController],
   providers: [],
