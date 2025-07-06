@@ -19,7 +19,7 @@
       }
     },
     "generate-types": {
-      "command": "prisma generate",
+      "command": "prisma generate --no-engine",
       "options": {
         "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
       }
