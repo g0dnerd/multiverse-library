@@ -223,7 +223,7 @@ export class ScryfallService {
         }
 
         // Return print data for the oldest image available
-        return prints[prints.length - 1];
+        return this.getOldestPrint(prints);
       }),
       mergeMap((oldestPrint: ScryfallCard) => {
         if (isDfc) {
@@ -309,5 +309,13 @@ export class ScryfallService {
       card.layout !== 'vanguard' &&
       card.oversized === false
     );
+  }
+
+  private getOldestPrint(prints: ScryfallCard[]): ScryfallCard {
+    if (prints.length === 0) throw new Error('No prints found');
+
+    return prints.reduce((oldest, current) => {
+      return current.released_at < oldest.released_at ? current : oldest;
+    });
   }
 }

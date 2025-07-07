@@ -1,1 +1,22 @@
-/* You can add global styles to this file, and also import other style files */
+.content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.card-preview-list {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: start;
+  margin: 0 16px;
+}
+
+.card-image {
+  img {
+    max-width: 210px;
+    object-fit: contain;
+    margin: 12px 12px;
+    border-radius: 4.75% / 3.5%;
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.5);
+  }
+}
