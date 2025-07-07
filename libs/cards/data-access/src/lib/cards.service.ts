@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService, Prisma } from '@multiverse-library/prisma-client';
+import { shuffle } from './shuffle';
 
 @Injectable()
 export class CardsService {
@@ -15,5 +16,19 @@ export class CardsService {
     orderBy?: Prisma.CardOrderByWithRelationInput;
   }) {
     return this.prisma.card.findMany(params);
+  }
+
+  // Returns the specified number of random cards
+  async random(amount: number) {
+    // NOTE: For our DB of ~35k cards, loading all into memory is still cheap enough,
+    // since they are also indexed by ID.
+    const allCards = await this.prisma.card.findMany({
+      select: { id: true },
+    });
+    const ids = allCards.map((card) => card.id);
+
+    const picked = shuffle(ids).slice(0, amount);
+
+    return this.prisma.card.findMany({ where: { id: { in: picked } } });
   }
 }

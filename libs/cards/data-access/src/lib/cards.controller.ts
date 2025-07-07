@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { CardsService } from './cards.service';
@@ -8,6 +8,12 @@ import { CardEntity } from './models/card.entity';
 @ApiTags('cards')
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
+
+  @Get('random/:amount')
+  @ApiOkResponse({ type: CardEntity, isArray: true })
+  getRandomCard(@Param('amount', ParseIntPipe) amount: number) {
+    return this.cardsService.random(amount);
+  }
 
   @Get(':searchString')
   @ApiOkResponse({ type: CardEntity, isArray: true })
