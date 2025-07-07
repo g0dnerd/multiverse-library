@@ -15,13 +15,7 @@ export class CardsController {
     return this.cardsService.random(amount);
   }
 
-  @Get(':id')
-  @ApiOkResponse({ type: CardEntity })
-  getCardById(@Param('id', ParseIntPipe) id: number) {
-    return this.cardsService.card({ id });
-  }
-
-  @Get(':searchString')
+  @Get('search/:searchString')
   @ApiOkResponse({ type: CardEntity, isArray: true })
   getFilteredCards(@Param('searchString') searchString: string) {
     return this.cardsService.cards({
@@ -31,5 +25,11 @@ export class CardsController {
         },
       },
     });
+  }
+
+  @Get(':id')
+  @ApiOkResponse({ type: CardEntity })
+  getCardById(@Param('id', ParseIntPipe) id: number) {
+    return this.cardsService.card({ id });
   }
 }
