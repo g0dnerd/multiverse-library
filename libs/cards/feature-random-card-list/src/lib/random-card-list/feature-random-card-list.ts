@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 
-import { CardListStore } from '@multiverse-library/cards/data-access';
+import { CardListStore } from '@librarian/cards/data-access';
 import { CardListItem } from '../card-list-item/card-list-item';
 
 @Component({
   selector: 'lib-random-card-list',
   imports: [CardListItem],
-  templateUrl: './random-card-list.html',
+  templateUrl: './feature-random-card-list.html',
 })
 export class FeatureRandomCardList {
   private readonly cardListStore = inject(CardListStore);

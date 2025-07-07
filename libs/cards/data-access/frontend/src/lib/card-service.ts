@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { ApiService } from '@multiverse-library/core/http-client';
-import { CardEntity } from '../models/card.entity';
+import { ApiService } from '@librarian/core/http-client';
+import { CardEntity } from '@multiverse-library/cards/data-access';
 
 @Injectable({ providedIn: 'root' })
 export class CardService {

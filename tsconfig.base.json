@@ -15,21 +15,23 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@multiverse-library/cards/data-access": [
-        "libs/cards/data-access/src/index.ts"
-      ],
-      "@multiverse-library/cards/feature-random-card-list": [
+      "@librarian/cards/feature-random-card-list": [
         "libs/cards/feature-random-card-list/src/index.ts"
       ],
-      "@multiverse-library/core/data-access": [
-        "libs/core/data-access/src/index.ts"
-      ],
-      "@multiverse-library/core/http-client": [
-        "libs/core/http-client/src/index.ts"
-      ],
-      "@multiverse-library/prisma-client": ["libs/prisma-client/src/index.ts"],
-      "@multiverse-library/scryfall/data-access": [
+      "@librarian/core/data-access": ["libs/core/data-access/src/index.ts"],
+      "@librarian/core/http-client": ["libs/core/http-client/src/index.ts"],
+      "@library/prisma-client": ["libs/prisma-client/src/index.ts"],
+      "@library/scryfall/data-access": [
         "libs/scryfall/data-access/src/index.ts"
+      ],
+      "@librarian/cards/data-access": [
+        "libs/cards/data-access/frontend/src/index.ts"
+      ],
+      "@library/cards/data-access": [
+        "libs/cards/data-access/backend/src/index.ts"
+      ],
+      "@multiverse-library/cards/data-access": [
+        "libs/cards/data-access/shared/src/index.ts"
       ]
     }
   },

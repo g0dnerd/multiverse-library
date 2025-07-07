@@ -22,7 +22,7 @@ import {
 import { Readable } from 'stream';
 import * as StreamArray from 'stream-json/streamers/StreamArray';
 
-import { Prisma, PrismaService } from '@multiverse-library/prisma-client';
+import { Prisma, PrismaService } from '@library/prisma-client';
 import { BulkDataItems } from './models/bulk';
 import { ScryfallCard } from './models/card';
 import { ScryfallPrints } from './models/prints';

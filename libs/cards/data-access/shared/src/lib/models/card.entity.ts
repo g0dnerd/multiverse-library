@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Card } from '@multiverse-library/prisma-client';
+import { Card } from '@library/prisma-client';
 
 export class CardEntity implements Card {
   @ApiProperty()

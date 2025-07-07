@@ -2,7 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { PrismaClientModule } from '@multiverse-library/prisma-client';
+import { PrismaClientModule } from '@library/prisma-client';
 import { ScryfallController } from './scryfall.controller';
 import { ScryfallService } from './scryfall.service';
 

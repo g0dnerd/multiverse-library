@@ -2,9 +2,9 @@ import { Controller, Get, HttpException, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { map, mergeMap } from 'rxjs';
 
+import { BulkDataType } from '@library/prisma-client';
 import { ScryfallService } from './scryfall.service';
 import { BulkData, BulkDataType as ScryfallBulkDataType } from './models/bulk';
-import { BulkDataType } from '@multiverse-library/prisma-client';
 
 @Controller('scryfall')
 @ApiTags('scryfall')

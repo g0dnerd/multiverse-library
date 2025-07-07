@@ -1,8 +1,8 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
+import { CardEntity } from '@multiverse-library/cards/data-access';
 import { CardsService } from './cards.service';
-import { CardEntity } from '../models/card.entity';
 
 @Controller('cards')
 @ApiTags('cards')

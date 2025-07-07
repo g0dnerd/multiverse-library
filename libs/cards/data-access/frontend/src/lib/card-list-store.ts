@@ -1,16 +1,17 @@
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { cardListInitialState, CardListState } from '../models/card-state';
 import { inject } from '@angular/core';
-import { CardService } from './card-service';
+import { tapResponse } from '@ngrx/operators';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap } from 'rxjs';
+
+import { CardEntity } from '@multiverse-library/cards/data-access';
 import {
   setLoaded,
   setLoading,
   withCallState,
-} from '@multiverse-library/core/data-access';
-import { tapResponse } from '@ngrx/operators';
-import { CardEntity } from '../models/card.entity';
+} from '@librarian/core/data-access';
+import { CardService } from './card-service';
+import { cardListInitialState, CardListState } from './card-state';
 
 export const CardListStore = signalStore(
   { providedIn: 'root' },

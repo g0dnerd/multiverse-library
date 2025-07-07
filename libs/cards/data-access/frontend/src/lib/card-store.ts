@@ -4,14 +4,14 @@ import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap } from 'rxjs';
 
+import { CardEntity } from '@multiverse-library/cards/data-access';
 import {
   setLoaded,
   setLoading,
   withCallState,
-} from '@multiverse-library/core/data-access';
-import { cardInitialState, CardState } from '../models/card-state';
+} from '@librarian/core/data-access';
+import { cardInitialState, CardState } from './card-state';
 import { CardService } from './card-service';
-import { CardEntity } from '../models/card.entity';
 
 export const CardStore = signalStore(
   { providedIn: 'root' },

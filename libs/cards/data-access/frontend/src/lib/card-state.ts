@@ -1,4 +1,4 @@
-import { CardEntity } from './card.entity';
+import { CardEntity } from '@multiverse-library/cards/data-access';
 
 export interface CardState {
   data: CardEntity | null;

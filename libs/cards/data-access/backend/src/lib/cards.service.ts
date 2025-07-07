@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService, Prisma } from '@multiverse-library/prisma-client';
+import { PrismaService, Prisma } from '@library/prisma-client';
 import { shuffle } from './shuffle';
 
 @Injectable()

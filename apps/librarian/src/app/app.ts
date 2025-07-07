@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { FeatureRandomCardList } from '@multiverse-library/cards/feature-random-card-list';
+import { FeatureRandomCardList } from '@librarian/cards/feature-random-card-list';
 
 @Component({
   imports: [FeatureRandomCardList, RouterModule],
