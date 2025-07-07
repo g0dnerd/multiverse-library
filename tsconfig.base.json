@@ -15,11 +15,20 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@multiverse-library/data-access-cards": [
+      "@multiverse-library/cards/data-access": [
         "libs/cards/data-access/src/index.ts"
       ],
+      "@multiverse-library/cards/feature-random-card-list": [
+        "libs/cards/feature-random-card-list/src/index.ts"
+      ],
+      "@multiverse-library/core/data-access": [
+        "libs/core/data-access/src/index.ts"
+      ],
+      "@multiverse-library/core/http-client": [
+        "libs/core/http-client/src/index.ts"
+      ],
       "@multiverse-library/prisma-client": ["libs/prisma-client/src/index.ts"],
-      "@multiverse-library/data-access-scryfall": [
+      "@multiverse-library/scryfall/data-access": [
         "libs/scryfall/data-access/src/index.ts"
       ]
     }

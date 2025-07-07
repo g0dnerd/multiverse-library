@@ -7,6 +7,10 @@ import { shuffle } from './shuffle';
 export class CardsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  card(where: Prisma.CardWhereUniqueInput) {
+    return this.prisma.card.findUnique({ where });
+  }
+
   // Generic getter that can be wrapped in the service or the controller.
   cards(params: {
     skip?: number;
