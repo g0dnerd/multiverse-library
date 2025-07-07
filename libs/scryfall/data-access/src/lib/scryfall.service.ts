@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import {
@@ -23,7 +23,6 @@ import { Readable } from 'stream';
 import * as StreamArray from 'stream-json/streamers/StreamArray';
 
 import { Prisma, PrismaService } from '@multiverse-library/prisma-client';
-import { CreateCardDto } from '@multiverse-library/data-access-cards';
 import { BulkDataItems } from './models/bulk';
 import { ScryfallCard } from './models/card';
 import { ScryfallPrints } from './models/prints';
@@ -64,6 +63,77 @@ export class ScryfallService {
     orderBy?: Prisma.BulkUrlOrderByWithRelationInput;
   }) {
     return this.prisma.bulkUrl.findMany(params);
+  }
+
+  /**
+   * Streams the newest bulk data JSON (around 500 MB) from the Scryfall API,
+   * buffers the items into chunks and does batched inserts via
+   * `createMany` and `skipDuplicates`.
+   */
+  fetchAndStreamCards(bulkDataUri: string) {
+    return this.http
+      .get<Readable>(bulkDataUri, { responseType: 'stream' })
+      .pipe(
+        // Extract the raw response stream and pipe it into a StreamArray parser
+        mergeMap((res: AxiosResponse<Readable>) => {
+          const parser = res.data.pipe(StreamArray.withParser());
+
+          // Turn each parser 'data' event into an observable emission of `value`.
+          return fromEvent(parser, 'data').pipe(map((d: any) => d.value));
+        }),
+        // Gather into batches of 100
+        bufferCount(100),
+
+        // Process one batch at a time
+        concatMap((batch: ScryfallCard[]) =>
+          of(batch).pipe(
+            mergeMap((cards) => {
+              const data = cards
+                .filter((card) => this.isActualMagicCard(card))
+                .map((card) => this.mapFromScryfallToPrisma(card));
+              return this.prisma.card.createMany({
+                data,
+                skipDuplicates: true,
+              });
+            }),
+            // Retry failed batches twice after 1000 and 2000 ms.
+            retry({
+              count: 2,
+              delay: (err, retryCount) => {
+                const backoff = 1000 * Math.pow(2, retryCount - 1);
+                this.logger.warn(
+                  `Batch failed (attempt ${
+                    retryCount + 1
+                  }, error ${err}). Retrying in ${backoff}ms.`
+                );
+                return timer(backoff);
+              },
+            }),
+            catchError((err) => {
+              this.logger.error(
+                `Failed to upsert batch of ${batch.length} items`,
+                err.stack
+              );
+              throw err;
+            }),
+            // Delay of 500ms between transactions to not overwhelm DB.
+            delay(500)
+          )
+        ),
+        finalize(() => {
+          this.logger.log('Streaming complete');
+        })
+      )
+      .subscribe({
+        next: (result) => {
+          if (result && typeof result.count === 'number') {
+            this.logger.log(`Upserted ${result.count} items in batch.`);
+          }
+        },
+        error: (err) =>
+          this.logger.error('Fatal error in JSON stream processing:', err),
+        complete: () => this.logger.log('Stream subscription complete'),
+      });
   }
 
   /**
@@ -149,7 +219,7 @@ export class ScryfallService {
         if (!Array.isArray(prints) || prints.length === 0) {
           const errorMsg = `Empty prints data response for card with ID ${cardId}`;
           this.logger.error(errorMsg);
-          throw new HttpException(errorMsg, 500);
+          throw new Error(errorMsg);
         }
 
         // Return print data for the oldest image available
@@ -157,10 +227,9 @@ export class ScryfallService {
       }),
       mergeMap((oldestPrint: ScryfallCard) => {
         if (isDfc) {
-          const faces = oldestPrint.card_faces;
+          const faces = oldestPrint.card_faces || [];
           if (
-            !faces ||
-            !Array.isArray(faces) ||
+            faces.length !== 2 ||
             !faces[0].image_uris?.normal ||
             !faces[1].image_uris?.normal
           ) {
@@ -170,8 +239,12 @@ export class ScryfallService {
             this.logger.warn(
               `Assuming it's a token or otherwise non-standalone card, deleting it from the DB.`
             );
-            this.prisma.card.delete({ where: { id: cardId } });
-            return of(null);
+            return from(
+              this.prisma.card.delete({
+                where: { id: cardId },
+                select: { id: true },
+              })
+            );
           }
 
           const frontFaceImg = faces[0].image_uris.normal;
@@ -180,23 +253,22 @@ export class ScryfallService {
             this.prisma.card.update({
               where: { id: cardId },
               data: { frontFaceImg, backFaceImg },
-              select: {},
+              select: { id: true },
             })
           );
         } else {
-          const uris = oldestPrint.image_uris;
-          if (!uris || !uris.normal) {
+          const uri = oldestPrint.image_uris?.normal;
+          if (!uri) {
             const errorMsg = `Could not find image URIs or normal size URI didn't exist for card ${oldestPrint.name}.`;
             this.logger.error(errorMsg);
-            throw new HttpException(errorMsg, 500);
+            throw new Error(errorMsg);
           }
 
-          const frontFaceImg = uris.normal;
           return from(
             this.prisma.card.update({
               where: { id: cardId },
-              data: { frontFaceImg },
-              select: {},
+              data: { frontFaceImg: uri },
+              select: { id: true },
             })
           );
         }
@@ -208,84 +280,34 @@ export class ScryfallService {
     );
   }
 
-  /**
-   * Streams the newest bulk data JSON (around 500 MB) from the Scryfall API,
-   * buffers the items into chunks and does batched inserts via
-   * `createMany` and `skipDuplicates`.
-   */
-  fetchAndStreamCards(bulkDataUri: string) {
-    return this.http
-      .get<Readable>(bulkDataUri, { responseType: 'stream' })
-      .pipe(
-        // Extract the raw response stream and pipe it into a StreamArray parser
-        mergeMap((res: AxiosResponse<Readable>) => {
-          const parser = res.data.pipe(StreamArray.withParser());
-
-          // Turn each parser 'data' event into an observable emission of `value`.
-          return fromEvent(parser, 'data').pipe(map((d: any) => d.value));
-        }),
-        // Gather into batches of 100
-        bufferCount(100),
-
-        // Process one batch at a time
-        concatMap((batch: ScryfallCard[]) =>
-          of(batch).pipe(
-            mergeMap((cards) => {
-              const createCardDtos = cards
-                .filter((card) => card.set_type !== 'token')
-                .map((card) => this.mapFromScryfallToDto(card));
-              return this.prisma.card.createMany({
-                data: createCardDtos,
-                skipDuplicates: true,
-              });
-            }),
-            // Retry failed batches twice after 1000 and 2000 ms.
-            retry({
-              count: 2,
-              delay: (err, retryCount) => {
-                const backoff = 1000 * Math.pow(2, retryCount - 1);
-                this.logger.warn(
-                  `Batch failed (attempt ${
-                    retryCount + 1
-                  }, error ${err}). Retrying in ${backoff}ms.`
-                );
-                return timer(backoff);
-              },
-            }),
-            catchError((err) => {
-              this.logger.error(
-                `Failed to upsert batch of ${batch.length} items`,
-                err.stack
-              );
-              throw err;
-            }),
-            // Delay of 500ms between transactions to not overwhelm DB.
-            delay(500)
-          )
-        ),
-        finalize(() => {
-          this.logger.log('Streaming complete');
-        })
-      )
-      .subscribe({
-        next: (result) => {
-          if (result && typeof result.count === 'number') {
-            this.logger.log(`Upserted ${result.count} items in batch.`);
-          }
-        },
-        error: (err) =>
-          this.logger.error('Fatal error in JSON stream processing:', err),
-        complete: () => this.logger.log('Stream subscription complete'),
-      });
-  }
-
-  // Maps a Scryfall card object into a database-friendly DTO to create a card.
-  private mapFromScryfallToDto(card: ScryfallCard): CreateCardDto {
+  // Maps a Scryfall card object into a database-friendly type to create a card.
+  private mapFromScryfallToPrisma(card: ScryfallCard): Prisma.CardCreateInput {
+    let isDoubleFaced = false;
+    // A card is double-faced if it has exactly two card faces that each have their own image URI.
+    if (card.card_faces) {
+      const actualFaces = card.card_faces.filter(
+        (cardFace) => !!cardFace.image_uris
+      );
+      if (actualFaces.length === 2) isDoubleFaced = true;
+    }
     return {
       name: card.name,
       scryfallId: card.id,
-      isDoubleFaced: !!card.card_faces?.length,
+      isDoubleFaced,
       printsSearchUri: card.prints_search_uri,
     };
+  }
+
+  private isActualMagicCard(card: ScryfallCard): boolean {
+    return (
+      card.set_type !== 'token' &&
+      card.set_type !== 'memorabilia' &&
+      card.set_type !== 'funny' &&
+      card.layout !== 'emblem' &&
+      card.layout !== 'planar' &&
+      card.layout !== 'scheme' &&
+      card.layout !== 'vanguard' &&
+      card.oversized === false
+    );
   }
 }
