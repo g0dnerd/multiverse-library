@@ -223,7 +223,9 @@ export class ScryfallService {
         }
 
         // Return print data for the oldest image available
-        return this.getOldestPrint(prints);
+        const oldest = this.getOldestPrint(prints);
+        if (!oldest) return prints[prints.length - 1];
+        return oldest;
       }),
       mergeMap((oldestPrint: ScryfallCard) => {
         if (isDfc) {
