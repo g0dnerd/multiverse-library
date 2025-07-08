@@ -19,7 +19,7 @@
       }
     },
     "generate-types": {
-      "command": "prisma generate --no-engine",
+      "command": "prisma generate",
       "options": {
         "cwd": "{projectRoot}"
       }
