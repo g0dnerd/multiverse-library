@@ -316,8 +316,9 @@ export class ScryfallService {
   private getOldestPrint(prints: ScryfallCard[]): ScryfallCard {
     if (prints.length === 0) throw new Error('No prints found');
 
-    prints = prints.filter((print) => !print.full_art);
+    const noFullArt = prints.filter((print) => !print.full_art);
 
+    if (noFullArt.length > 0) prints = noFullArt;
     return prints.reduce((oldest, current) => {
       return current.released_at < oldest.released_at ? current : oldest;
     });
