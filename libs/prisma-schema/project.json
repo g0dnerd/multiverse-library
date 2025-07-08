@@ -9,37 +9,37 @@
     "prisma": {
       "command": "prisma",
       "options": {
-        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+        "cwd": "{projectRoot}"
       }
     },
     "migrate": {
       "command": "prisma migrate dev",
       "options": {
-        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+        "cwd": "{projectRoot}"
       }
     },
     "generate-types": {
       "command": "prisma generate --no-engine",
       "options": {
-        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+        "cwd": "{projectRoot}"
       }
     },
     "reset": {
       "command": "prisma migrate reset",
       "options": {
-        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+        "cwd": "{projectRoot}"
       }
     },
     "start": {
       "command": "prisma dev",
       "options": {
-        "cwd": "/home/paul/misc/multiverse-library/libs/prisma-schema"
+        "cwd": "{projectRoot}"
       }
     },
     "seed": {
       "command": "npx ts-node libs/prisma-schema/src/seed.ts",
       "options": {
-        "cwd": "/home/paul/misc/multiverse-library"
+        "cwd": "{projectRoot}"
       }
     }
   }
