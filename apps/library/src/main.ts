@@ -7,7 +7,10 @@ import { AppModule } from './app/app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: ['http://localhost'],
+      origin: [
+        'http://localhost',
+        'https://multiverse-library-production.up.railway.app',
+      ],
       preflightContinue: false,
       maxAge: 3600,
     },
