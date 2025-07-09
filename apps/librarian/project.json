@@ -64,7 +64,6 @@
         }
       },
       "defaultConfiguration": "development",
-      "dependsOn": ["library:serve"],
       "options": {
         "proxyConfig": "apps/librarian/proxy.conf.json"
       }
