@@ -1,12 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { API_URL } from './api-url-token';
+// import { API_URL } from './api-url-token';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = inject(API_URL);
+  private readonly apiUrl =
+    'https://multiverse-library-production.up.railway.app/api';
 
   get headers(): HttpHeaders {
     const headersConfig = {
