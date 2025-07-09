@@ -35,9 +35,9 @@ interface ScryfallCardGameplayFields {
   all_parts?: ScryfallRelatedCard[];
   card_faces?: ScryfallCardFace[];
   cmc: number;
-  color_identity: ScryfallColors;
-  color_indicator?: ScryfallColors;
-  colors: ScryfallColors;
+  color_identity: ScryfallColors[];
+  color_indicator?: ScryfallColors[];
+  colors: ScryfallColors[];
   defense?: string;
   edhrec_rank?: number;
   game_changer?: boolean;
@@ -51,7 +51,7 @@ interface ScryfallCardGameplayFields {
   oracle_text?: string;
   penny_rank?: string;
   power?: string;
-  produced_mana?: ScryfallColors;
+  produced_mana?: ScryfallColors[];
   reserved: boolean;
   toughness?: string;
   type_line: string;

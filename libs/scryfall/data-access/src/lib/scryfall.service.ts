@@ -26,6 +26,7 @@ import { Prisma, PrismaService } from '@library/prisma-client';
 import { BulkDataItems } from './models/bulk';
 import { ScryfallCard } from './models/card';
 import { ScryfallPrints } from './models/prints';
+import { ScryfallLanguage } from './models/language';
 
 @Injectable()
 export class ScryfallService {
@@ -149,6 +150,7 @@ export class ScryfallService {
     // Work in batches of 100 images
     const pageSize = 100;
     let lastId = 0;
+    let progress = 0;
 
     // NOTE: The type is manually defined like this since Partial<Card> doesn't work
     // with the `prisma.card.findMany` invocation. It's not nice though.
@@ -165,9 +167,8 @@ export class ScryfallService {
 
       if (page.length === 0) break;
 
-      this.logger.log(
-        `Fetched ${page.length} cards (lastId=${page[page.length - 1].id})`
-      );
+      progress += page.length;
+      this.logger.log(`Fetched ${progress}/${numCardsInDb} cards`);
 
       // For concurrency-limited HTTP+DB updates:
       //   - turn the page into an Observable stream
@@ -292,14 +293,22 @@ export class ScryfallService {
       );
       if (actualFaces.length === 2) isDoubleFaced = true;
     }
+
     return {
       name: card.name,
       scryfallId: card.id,
       isDoubleFaced,
       printsSearchUri: card.prints_search_uri,
+      keywords: card.keywords,
+      manaValue: card.cmc,
+      colors: card.colors,
     };
   }
 
+  /**
+   * Filters out memorabilia, planechase cards, un-set cards,
+   * oversized cards, emblems, schemes and tokens.
+   */
   private isActualMagicCard(card: ScryfallCard): boolean {
     return (
       card.set_type !== 'token' &&
@@ -316,9 +325,11 @@ export class ScryfallService {
   private getOldestPrint(prints: ScryfallCard[]): ScryfallCard {
     if (prints.length === 0) throw new Error('No prints found');
 
-    const noFullArt = prints.filter((print) => !print.full_art);
+    const artAndLangFiltered = prints.filter(
+      (print) => !print.full_art && print.lang === ScryfallLanguage.English
+    );
 
-    if (noFullArt.length > 0) prints = noFullArt;
+    if (artAndLangFiltered.length > 0) prints = artAndLangFiltered;
     return prints.reduce((oldest, current) => {
       return current.released_at < oldest.released_at ? current : oldest;
     });
