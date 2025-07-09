@@ -10,6 +10,7 @@ async function bootstrap() {
       origin: [
         'http://localhost',
         'https://multiverse-library-production.up.railway.app',
+        'https://library.paulkukowski.net',
       ],
       preflightContinue: false,
       maxAge: 3600,
