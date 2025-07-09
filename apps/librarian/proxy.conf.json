@@ -1,0 +1,6 @@
+{
+  "/api": {
+    "target": "https://multiverse-library-production.up.railway.app",
+    "secure": true
+  }
+}
