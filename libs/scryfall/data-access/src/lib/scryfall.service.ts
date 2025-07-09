@@ -325,13 +325,30 @@ export class ScryfallService {
   private getOldestPrint(prints: ScryfallCard[]): ScryfallCard {
     if (prints.length === 0) throw new Error('No prints found');
 
-    const artAndLangFiltered = prints.filter(
-      (print) => !print.full_art && print.lang === ScryfallLanguage.English
-    );
+    const sorted = prints.sort((a, b) => {
+      const aIsEnglish = a.lang === ScryfallLanguage.English ? 1 : 0;
+      const bIsEnglish = b.lang === ScryfallLanguage.English ? 1 : 0;
+      if (aIsEnglish !== bIsEnglish) return bIsEnglish - aIsEnglish;
 
-    if (artAndLangFiltered.length > 0) prints = artAndLangFiltered;
-    return prints.reduce((oldest, current) => {
-      return current.released_at < oldest.released_at ? current : oldest;
+      const aReleaseDate = Date.parse(a.released_at);
+      const bReleaseDate = Date.parse(b.released_at);
+      if (aReleaseDate !== bReleaseDate) return aReleaseDate - bReleaseDate;
+
+      const aFullArt = a.full_art ? 1 : 0;
+      const bFullArt = b.full_art ? 1 : 0;
+      if (aFullArt !== bFullArt) return aFullArt - bFullArt;
+
+      const aFrames = a.frame_effects?.length ?? 0;
+      const bFrames = b.frame_effects?.length ?? 0;
+      if (aFrames !== bFrames) return aFrames - bFrames;
+
+      const aPromo = a.set_type === 'promo' ? 1 : 0;
+      const bPromo = b.set_type === 'promo' ? 1 : 0;
+      if (aPromo !== bPromo) return aPromo - bPromo;
+
+      return 0;
     });
+
+    return sorted[0];
   }
 }

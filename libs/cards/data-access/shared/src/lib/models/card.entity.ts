@@ -31,8 +31,5 @@ export class CardEntity implements Card {
   keywords: string[];
 
   @ApiProperty()
-  types: string[];
-
-  @ApiProperty()
   colors: $Enums.Color[];
 }

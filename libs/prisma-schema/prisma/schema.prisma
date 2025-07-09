@@ -18,7 +18,6 @@ model Card {
   printsSearchUri String
   manaValue       Int      @default(1)
   keywords        String[]
-  types           String[]
   colors          Color[]
 
   @@index([scryfallId])

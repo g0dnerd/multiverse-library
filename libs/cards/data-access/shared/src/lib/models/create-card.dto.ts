@@ -63,9 +63,5 @@ export class CreateCardDto {
 
   @IsArray()
   @ApiProperty()
-  types: string[];
-
-  @IsArray()
-  @ApiProperty()
   colors: $Enums.Color[];
 }
