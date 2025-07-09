@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Card } from '@library/prisma-client';
+import { $Enums, Card } from '@library/prisma-client';
 
 export class CardEntity implements Card {
   @ApiProperty()
@@ -23,4 +23,16 @@ export class CardEntity implements Card {
 
   @ApiProperty()
   printsSearchUri: string;
+
+  @ApiProperty({ required: false, default: 0 })
+  manaValue: number;
+
+  @ApiProperty()
+  keywords: string[];
+
+  @ApiProperty()
+  types: string[];
+
+  @ApiProperty()
+  colors: $Enums.Color[];
 }

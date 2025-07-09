@@ -1,11 +1,15 @@
+import { $Enums } from '@library/prisma-client';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
   IsUUID,
+  Min,
   MinLength,
 } from 'class-validator';
 
@@ -46,4 +50,22 @@ export class CreateCardDto {
   @IsNotEmpty()
   @ApiProperty()
   printsSearchUri: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @ApiProperty({ required: false, default: 0 })
+  manaValue?: number;
+
+  @IsArray()
+  @ApiProperty()
+  keywords: string[];
+
+  @IsArray()
+  @ApiProperty()
+  types: string[];
+
+  @IsArray()
+  @ApiProperty()
+  colors: $Enums.Color[];
 }
