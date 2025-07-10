@@ -97,7 +97,7 @@ export class ScryfallService {
                 skipDuplicates: true,
               });
             }),
-            // Retry failed batches twice after 1000 and 2000 ms.
+            // Retry failed batches twice after 1000 and 3000 ms.
             retry({
               count: 2,
               delay: (err, retryCount) => {
@@ -340,8 +340,8 @@ export class ScryfallService {
    * and nukes it if we don't like it.
    */
   private checkCardForSanitization(cardId: number, scryfallId: string) {
-    // 200 Millisecond delay to not blast the Scryfall API too much
-    const delay = 200;
+    // 300 Millisecond delay to not blast the Scryfall API too much
+    const delay = 300;
 
     return of(null).pipe(
       delayWhen(() => timer(delay)),
