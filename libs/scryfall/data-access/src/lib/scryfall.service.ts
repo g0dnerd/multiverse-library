@@ -351,6 +351,7 @@ export class ScryfallService {
       map((res: AxiosResponse<ScryfallCard>) => {
         const card = res.data;
         if (!this.isActualMagicCard(card)) {
+          this.logger.log(`Purging card ${card.name} (${card.id})`);
           return from(
             this.prisma.card.delete({
               where: { id: cardId },
@@ -402,6 +403,7 @@ export class ScryfallService {
       card.layout !== 'emblem' &&
       card.layout !== 'planar' &&
       card.layout !== 'scheme' &&
+      card.layout !== 'meld' &&
       card.layout !== 'vanguard' &&
       !(
         card.promo_types &&
