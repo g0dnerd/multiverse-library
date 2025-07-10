@@ -1,33 +1,11 @@
-import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { redisStore } from 'cache-manager-redis-store';
 
 import { PrismaClientModule } from '@library/prisma-client';
 import { CardsController } from './cards.controller';
 import { CardsService } from './cards.service';
 
 @Module({
-  imports: [
-    PrismaClientModule,
-    CacheModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        const store = await redisStore({
-          socket: {
-            host: configService.get<string>('REDIS_HOST'),
-            port: parseInt(configService.get<string>('REDIS_PORT')!, 10),
-          },
-          username: configService.get<string>('REDIS_USERNAME'),
-          password: configService.get<string>('REDIS_PASSWORD'),
-        });
-        return {
-          store: () => store,
-          ttl: 24 * 60 * 60 * 1000,
-        };
-      },
-    }),
-  ],
+  imports: [PrismaClientModule],
   controllers: [CardsController],
   providers: [CardsService],
   exports: [CardsService],
