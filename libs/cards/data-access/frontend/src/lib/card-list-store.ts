@@ -43,9 +43,36 @@ export const CardListStore = signalStore(
         })
       )
     ),
+    getCardsByKeyword: rxMethod<string[]>(
+      pipe(
+        switchMap((keywords) => {
+          patchState(store, {
+            cards: cardListInitialState.cards,
+            ...setLoading('getCardsByKeyword'),
+          });
+          return cardService.getCardsByKeyword(keywords).pipe(
+            tapResponse({
+              next: (cards: CardEntity[]) => {
+                patchState(store, {
+                  cards,
+                  ...setLoaded('getCardsByKeyword'),
+                });
+              },
+              error: () => {
+                patchState(store, {
+                  cards: cardListInitialState.cards,
+                  ...setLoaded('getCardsByKeyword'),
+                });
+              },
+            })
+          );
+        })
+      )
+    ),
     initializeCardList: () => {
       patchState(store, cardListInitialState);
     },
   })),
-  withCallState({ collection: 'getRandomCards' })
+  withCallState({ collection: 'getRandomCards' }),
+  withCallState({ collection: 'getCardsByKeyword' })
 );

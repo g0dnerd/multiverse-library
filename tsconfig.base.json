@@ -18,6 +18,9 @@
       "@librarian/cards/data-access": [
         "libs/cards/data-access/frontend/src/index.ts"
       ],
+      "@librarian/cards/feature-curated-card-list": [
+        "libs/cards/feature-curated-card-list/src/index.ts"
+      ],
       "@librarian/cards/feature-random-card-list": [
         "libs/cards/feature-random-card-list/src/index.ts"
       ],

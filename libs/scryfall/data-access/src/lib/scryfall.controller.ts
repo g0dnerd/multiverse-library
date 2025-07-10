@@ -1,10 +1,17 @@
-import { Controller, Get, HttpException, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { map, mergeMap } from 'rxjs';
 
 import { BulkDataType } from '@library/prisma-client';
 import { ScryfallService } from './scryfall.service';
 import { BulkData, BulkDataType as ScryfallBulkDataType } from './models/bulk';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('scryfall')
 @ApiTags('scryfall')
@@ -53,6 +60,13 @@ export class ScryfallController {
       orderBy: { updatedAt: 'desc' },
     });
     return uri;
+  }
+
+  @UseInterceptors(CacheInterceptor)
+  @Get('catalog/keyword-abilities')
+  @ApiOkResponse({ type: String, isArray: true })
+  getKeywordAbilities() {
+    return this.scryfallService.getKeywordAbilities();
   }
 
   @Post('sync-cards')

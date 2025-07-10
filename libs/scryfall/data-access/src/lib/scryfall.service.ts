@@ -28,6 +28,7 @@ import { ScryfallCard } from './models/card';
 import { ScryfallPrints } from './models/prints';
 import { ScryfallLanguage } from './models/language';
 import { Frame } from './models/frame';
+import { Catalog } from './models/catalog';
 
 @Injectable()
 export class ScryfallService {
@@ -367,6 +368,12 @@ export class ScryfallService {
         throw err;
       })
     );
+  }
+
+  getKeywordAbilities() {
+    return this.http
+      .get(`${this.scryfallApiUrl}/catalog/keyword-abilities`)
+      .pipe(map((res: AxiosResponse<Catalog>) => res.data.data));
   }
 
   // Maps a Scryfall card object into a database-friendly type to create a card.

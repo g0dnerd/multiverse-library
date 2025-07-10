@@ -1,3 +1,4 @@
+import { HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -16,6 +17,15 @@ export class CardService {
   getRandomCards(amount: number): Observable<CardEntity[]> {
     return this.apiService.get<CardEntity[]>(
       `${this.apiSuffix}/random/${amount}`
+    );
+  }
+
+  getCardsByKeyword(keywords: string[]): Observable<CardEntity[]> {
+    let params = new HttpParams();
+    params = params.append('keywords', keywords.join(','));
+    return this.apiService.get<CardEntity[]>(
+      `${this.apiSuffix}/by-keyword`,
+      params
     );
   }
 }

@@ -18,6 +18,7 @@ export class CardsService {
     cursor?: Prisma.CardWhereUniqueInput;
     where?: Prisma.CardWhereInput;
     orderBy?: Prisma.CardOrderByWithRelationInput;
+    select?: Prisma.CardSelect;
   }) {
     return this.prisma.card.findMany(params);
   }

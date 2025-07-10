@@ -1,0 +1,7 @@
+@if (!$isLoading()) {
+<div class="card-preview-list">
+  @for (card of $cards(); track card.id) {
+  <lib-card-list-item [card]="card" />
+  }
+</div>
+}
