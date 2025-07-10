@@ -27,6 +27,7 @@ import { BulkDataItems } from './models/bulk';
 import { ScryfallCard } from './models/card';
 import { ScryfallPrints } from './models/prints';
 import { ScryfallLanguage } from './models/language';
+import { Frame } from './models/frame';
 
 @Injectable()
 export class ScryfallService {
@@ -348,7 +349,7 @@ export class ScryfallService {
       mergeMap(() =>
         this.http.get(`${this.scryfallApiUrl}/cards/${scryfallId}`)
       ),
-      map((res: AxiosResponse<ScryfallCard>) => {
+      mergeMap((res: AxiosResponse<ScryfallCard>) => {
         const card = res.data;
         if (!this.isActualMagicCard(card)) {
           this.logger.log(`Purging card ${card.name} (${card.id})`);
@@ -406,9 +407,9 @@ export class ScryfallService {
       card.layout !== 'meld' &&
       card.layout !== 'vanguard' &&
       !(
-        card.promo_types &&
-        (card.promo_types.includes('arena') ||
-          card.promo_types.includes('rebalanced'))
+        card.promo_types?.includes('arena') ||
+        card.promo_types?.includes('rebalanced') ||
+        card.promo_types?.includes('booster_fun')
       ) &&
       card.oversized === false
     );
@@ -420,8 +421,9 @@ export class ScryfallService {
    * 1. Print is in English
    * 2. Print is the oldest one available
    * 3. Print is not full art
-   * 4. Print has as few frame effects as possible
-   * 5. Print is not from a promo set
+   * 4. Print uses the modern default frame
+   * 5. Print has as few frame effects as possible
+   * 6. Print is not from a promo set
    */
   private getBestPrint(prints: ScryfallCard[]): ScryfallCard {
     if (prints.length === 0) throw new Error('No prints found');
@@ -438,6 +440,10 @@ export class ScryfallService {
       const aFullArt = a.full_art ? 1 : 0;
       const bFullArt = b.full_art ? 1 : 0;
       if (aFullArt !== bFullArt) return aFullArt - bFullArt;
+
+      const aFrameType = a.frame === Frame.HolofoilStamp ? 1 : 0;
+      const bFrameType = b.frame === Frame.HolofoilStamp ? 1 : 0;
+      if (aFrameType !== bFrameType) return bFrameType - aFrameType;
 
       const aFrames = a.frame_effects?.length ?? 0;
       const bFrames = b.frame_effects?.length ?? 0;
