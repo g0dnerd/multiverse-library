@@ -3,6 +3,7 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import {
   Component,
   computed,
+  effect,
   inject,
   model,
   OnInit,
@@ -13,7 +14,6 @@ import {
   MatAutocompleteModule,
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
-import { MatButtonModule } from '@angular/material/button';
 import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,7 +27,6 @@ import { CardListItem } from '@librarian/cards/feature-random-card-list';
   imports: [
     CardListItem,
     MatAutocompleteModule,
-    MatButtonModule,
     MatChipsModule,
     MatFormFieldModule,
     MatIconModule,
@@ -64,6 +63,12 @@ export class FeatureCuratedCardList implements OnInit {
 
   readonly announcer = inject(LiveAnnouncer);
 
+  constructor() {
+    effect(() => {
+      this.updateCards(this.keywords());
+    });
+  }
+
   ngOnInit() {
     this.keywordListStore.getKeywordAbilities();
   }
@@ -98,10 +103,7 @@ export class FeatureCuratedCardList implements OnInit {
     event.option.deselect();
   }
 
-  onSubmit() {
-    const keywords = this.keywords();
-    if (!keywords) return;
-
+  updateCards(keywords: string[]) {
     this.cardListStore.getCardsByKeyword(keywords);
   }
 }

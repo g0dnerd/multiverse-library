@@ -1,5 +1,5 @@
 @if (!$isKeywordsLoading()) {
-<form class="keyword-form" (ngSubmit)="onSubmit()" #keywordForm="ngForm">
+<form class="keyword-form">
   <mat-form-field class="chip-list">
     <mat-label>Keywords</mat-label>
     <mat-chip-grid #chipGrid aria-label="Keyword ability selection">
@@ -31,9 +31,6 @@
       }
     </mat-autocomplete>
   </mat-form-field>
-  <button mat-flat-button type="submit" [disabled]="!keywordForm.form.valid">
-    Look up
-  </button>
 </form>
 } @if (!$isCardsLoading()) {
 <div class="card-preview-list">
