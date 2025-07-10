@@ -58,11 +58,16 @@ export class ScryfallController {
   @Post('sync-cards')
   async syncScryfallBulk() {
     const currentBulkUri = await this.getBulkUri();
-    this.scryfallService.fetchAndStreamCards(currentBulkUri.url);
+    return this.scryfallService.fetchAndStreamCards(currentBulkUri.url);
   }
 
   @Post('enrich-card-images')
   enrichCardImages() {
-    this.scryfallService.fetchCardsForEnrichment();
+    return this.scryfallService.fetchCardsForEnrichment();
+  }
+
+  @Post('sanitize')
+  sanitizeCards() {
+    return this.scryfallService.sanitizeCards();
   }
 }
