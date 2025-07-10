@@ -18,7 +18,7 @@
     },
     "serve": {
       "continuous": true,
-      "executor": "@nx/js:node",
+      "kxecutor": "@nx/js:node",
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
@@ -32,6 +32,12 @@
         "production": {
           "buildTarget": "library:build:production"
         }
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node dist/apps/library/main.js"
       }
     }
   },

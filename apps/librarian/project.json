@@ -71,6 +71,12 @@
         "buildTarget": "librarian:build"
       }
     },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node dist/apps/librarian/server/server.mjs"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     },

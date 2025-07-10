@@ -224,7 +224,7 @@ export class ScryfallService {
         }
 
         // Return print data for the oldest image available
-        const oldest = this.getOldestPrint(prints);
+        const oldest = this.getBestPrint(prints);
         if (!oldest) return prints[prints.length - 1];
         return oldest;
       }),
@@ -283,6 +283,90 @@ export class ScryfallService {
     );
   }
 
+  /**
+   * For every card in the DB, checks if it has the divine right to be there.
+   */
+  async sanitizeCards() {
+    const numCardsInDb = await this.prisma.card.count();
+    this.logger.log(`Checking ${numCardsInDb} cards for sanitization.`);
+
+    // Work in batches of 100 images
+    const pageSize = 100;
+    let lastId = 0;
+    let progress = 0;
+
+    // NOTE: The type is manually defined like this since Partial<Card> doesn't work
+    // with the `prisma.card.findMany` invocation. It's not nice though.
+    let page: { id: number; scryfallId: string }[];
+
+    do {
+      // Find the next 100 cards, only select strictly necessary fields
+      page = await this.prisma.card.findMany({
+        where: { id: { gt: lastId } },
+        orderBy: { id: 'asc' },
+        take: pageSize,
+        select: { id: true, scryfallId: true },
+      });
+
+      if (page.length === 0) break;
+
+      progress += page.length;
+      this.logger.log(`Fetched ${progress}/${numCardsInDb} cards`);
+
+      // For concurrency-limited HTTP+DB updates:
+      //   - turn the page into an Observable stream
+      //   - mergeMap with concurrency = 5
+      //   - toArray() to await the entire batch
+      await lastValueFrom(
+        from(page).pipe(
+          mergeMap(
+            (card) => this.checkCardForSanitization(card.id, card.scryfallId),
+            5
+          ),
+          catchError((err) => {
+            this.logger.error('Error sanitizing a card', err.stack);
+            return [];
+          }),
+          toArray()
+        )
+      );
+
+      lastId = page[page.length - 1].id;
+    } while (page.length === pageSize);
+  }
+
+  /**
+   * Checks a single card in the DB against its Scryfall entry
+   * and nukes it if we don't like it.
+   */
+  private checkCardForSanitization(cardId: number, scryfallId: string) {
+    // 200 Millisecond delay to not blast the Scryfall API too much
+    const delay = 200;
+
+    return of(null).pipe(
+      delayWhen(() => timer(delay)),
+      mergeMap(() =>
+        this.http.get(`${this.scryfallApiUrl}/cards/${scryfallId}`)
+      ),
+      map((res: AxiosResponse<ScryfallCard>) => {
+        const card = res.data;
+        if (!this.isActualMagicCard(card)) {
+          return from(
+            this.prisma.card.delete({
+              where: { id: cardId },
+              select: { id: true },
+            })
+          );
+        }
+        return of(null);
+      }),
+      catchError((err) => {
+        this.logger.error(`Error`, err.stack);
+        throw err;
+      })
+    );
+  }
+
   // Maps a Scryfall card object into a database-friendly type to create a card.
   private mapFromScryfallToPrisma(card: ScryfallCard): Prisma.CardCreateInput {
     let isDoubleFaced = false;
@@ -318,11 +402,25 @@ export class ScryfallService {
       card.layout !== 'planar' &&
       card.layout !== 'scheme' &&
       card.layout !== 'vanguard' &&
+      !(
+        card.promo_types &&
+        (card.promo_types.includes('arena') ||
+          card.promo_types.includes('rebalanced'))
+      ) &&
       card.oversized === false
     );
   }
 
-  private getOldestPrint(prints: ScryfallCard[]): ScryfallCard {
+  /**
+   * Returns the print for a card that matches the most criteria,
+   * in descending order of importance:
+   * 1. Print is in English
+   * 2. Print is the oldest one available
+   * 3. Print is not full art
+   * 4. Print has as few frame effects as possible
+   * 5. Print is not from a promo set
+   */
+  private getBestPrint(prints: ScryfallCard[]): ScryfallCard {
     if (prints.length === 0) throw new Error('No prints found');
 
     const sorted = prints.sort((a, b) => {
