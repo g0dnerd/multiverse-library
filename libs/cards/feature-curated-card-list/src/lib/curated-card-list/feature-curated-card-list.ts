@@ -12,9 +12,9 @@ export class FeatureCuratedCardList implements OnInit {
   private readonly cardListStore = inject(CardListStore);
 
   $cards = this.cardListStore.cards;
-  $isLoading = this.cardListStore.getRandomCardsLoading;
+  $isLoading = this.cardListStore.getCardsByKeywordLoading;
 
   ngOnInit() {
-    this.cardListStore.getRandomCards(16);
+    this.cardListStore.getCardsByKeyword(['flying', 'vigilance']);
   }
 }

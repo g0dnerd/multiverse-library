@@ -15,6 +15,6 @@ export class FeatureRandomCardList implements OnInit {
   $isLoading = this.cardListStore.getRandomCardsLoading;
 
   ngOnInit() {
-    this.cardListStore.getCardsByKeyword(['flying', 'vigilance']);
+    this.cardListStore.getRandomCards(15);
   }
 }
