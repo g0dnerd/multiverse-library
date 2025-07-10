@@ -408,6 +408,7 @@ export class ScryfallService {
       card.set_type !== 'memorabilia' &&
       card.set_type !== 'funny' &&
       card.set_type !== 'alchemy' &&
+      card.set !== 'sld' &&
       card.layout !== 'emblem' &&
       card.layout !== 'planar' &&
       card.layout !== 'scheme' &&

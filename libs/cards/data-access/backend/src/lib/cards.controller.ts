@@ -18,6 +18,29 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
+  @UseInterceptors(CacheInterceptor)
+  @Get('by-keyword')
+  @ApiOkResponse({ type: CardEntity, isArray: true })
+  getCardsByKeyword(
+    @Query('keywords', new ParseArrayPipe({ items: String, separator: ',' }))
+    keywords: string[]
+  ) {
+    return this.cardsService.cards({
+      where: {
+        keywords: {
+          hasEvery: keywords,
+        },
+      },
+      select: {
+        name: true,
+        isDoubleFaced: true,
+        frontFaceImg: true,
+        backFaceImg: true,
+        keywords: true,
+      },
+    });
+  }
+
   @Get('random/:amount')
   @ApiOkResponse({ type: CardEntity, isArray: true })
   getRandomCard(@Param('amount', ParseIntPipe) amount: number) {
@@ -39,28 +62,7 @@ export class CardsController {
         isDoubleFaced: true,
         frontFaceImg: true,
         backFaceImg: true,
-      },
-    });
-  }
-
-  @UseInterceptors(CacheInterceptor)
-  @Get('by-keyword')
-  @ApiOkResponse({ type: CardEntity, isArray: true })
-  getCardsByKeyword(
-    @Query('keywords', new ParseArrayPipe({ items: String, separator: ',' }))
-    keywords: string[]
-  ) {
-    return this.cardsService.cards({
-      where: {
-        keywords: {
-          hasEvery: keywords,
-        },
-      },
-      select: {
-        name: true,
-        isDoubleFaced: true,
-        frontFaceImg: true,
-        backFaceImg: true,
+        keywords: true,
       },
     });
   }

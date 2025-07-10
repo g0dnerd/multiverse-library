@@ -5,7 +5,7 @@ import { FeatureCuratedCardList } from '@librarian/cards/feature-curated-card-li
 
 export const appRoutes: Route[] = [
   {
-    path: '',
+    path: 'random',
     component: FeatureRandomCardList,
   },
   {
