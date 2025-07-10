@@ -1,38 +1,41 @@
-@if (!$isKeywordsLoading()) {
-<form class="keyword-form">
-  <mat-form-field class="chip-list">
-    <mat-label>Keywords</mat-label>
-    <mat-chip-grid #chipGrid aria-label="Keyword ability selection">
-      @for (kw of keywords(); track $index) {
-      <mat-chip-row (removed)="remove(kw)">
-        {{kw}}
-        <button matChipRemove [attr.aria-label]="'remove ' + kw">
-          <mat-icon>cancel</mat-icon>
-        </button>
-      </mat-chip-row>
-      }
-    </mat-chip-grid>
-    <input
-      name="currentKeyword"
-      placeholder="New Keyword..."
-      #keywordInput
-      [(ngModel)]="currentKeyword"
-      [matChipInputFor]="chipGrid"
-      [matAutocomplete]="auto"
-      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-      (matChipInputTokenEnd)="add($event)"
-    />
-    <mat-autocomplete
-      #auto="matAutocomplete"
-      (optionSelected)="selected($event); keywordInput.value = ''"
-    >
-      @for (kw of filteredKeywords(); track kw) {
-      <mat-option [value]="kw">{{kw}}</mat-option>
-      }
-    </mat-autocomplete>
-  </mat-form-field>
-</form>
-} @if (!$isCardsLoading()) {
+<div class="form-container">
+  @if (!$isKeywordsLoading()) {
+  <form class="keyword-form">
+    <mat-form-field class="chip-list">
+      <mat-label>Keywords</mat-label>
+      <mat-chip-grid #chipGrid aria-label="Keyword ability selection">
+        @for (kw of keywords(); track $index) {
+        <mat-chip-row (removed)="remove(kw)">
+          {{kw}}
+          <button matChipRemove [attr.aria-label]="'remove ' + kw">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+        }
+      </mat-chip-grid>
+      <input
+        name="currentKeyword"
+        placeholder="New Keyword..."
+        #keywordInput
+        [(ngModel)]="currentKeyword"
+        [matChipInputFor]="chipGrid"
+        [matAutocomplete]="auto"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        (matChipInputTokenEnd)="add($event)"
+      />
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        (optionSelected)="selected($event); keywordInput.value = ''"
+      >
+        @for (kw of filteredKeywords(); track kw) {
+        <mat-option [value]="kw">{{kw}}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+  </form>
+  }
+</div>
+@if (!$isCardsLoading()) {
 <div class="card-preview-list">
   @for (card of $cards(); track card.id) {
   <lib-card-list-item [card]="card" />
