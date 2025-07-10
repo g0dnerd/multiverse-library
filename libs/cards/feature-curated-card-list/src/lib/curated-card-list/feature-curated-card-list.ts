@@ -7,7 +7,6 @@ import { CardListItem } from '@librarian/cards/feature-random-card-list';
   selector: 'lib-curated-card-list',
   imports: [CardListItem],
   templateUrl: './feature-curated-card-list.html',
-  styleUrl: './feature-curated-card-list.scss',
 })
 export class FeatureCuratedCardList implements OnInit {
   private readonly cardListStore = inject(CardListStore);
