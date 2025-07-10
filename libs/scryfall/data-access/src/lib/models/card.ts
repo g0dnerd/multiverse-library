@@ -70,6 +70,8 @@ export interface ScryfallCardPrintFields {
   finishes: Finish[];
   flavor_name?: string;
   flavor_text?: string;
+  foil: boolean;
+  nonfoil: boolean;
   frame_effects?: FrameEffect[];
   frame: Frame;
   full_art: boolean;

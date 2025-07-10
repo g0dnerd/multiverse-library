@@ -398,6 +398,7 @@ export class ScryfallService {
       card.set_type !== 'token' &&
       card.set_type !== 'memorabilia' &&
       card.set_type !== 'funny' &&
+      card.set_type !== 'alchemy' &&
       card.layout !== 'emblem' &&
       card.layout !== 'planar' &&
       card.layout !== 'scheme' &&
@@ -439,6 +440,10 @@ export class ScryfallService {
       const aFrames = a.frame_effects?.length ?? 0;
       const bFrames = b.frame_effects?.length ?? 0;
       if (aFrames !== bFrames) return aFrames - bFrames;
+
+      const aFoil = a.foil ? 1 : 0;
+      const bFoil = b.foil ? 1 : 0;
+      if (aFoil !== bFoil) return aFoil - bFoil;
 
       const aPromo = a.set_type === 'promo' ? 1 : 0;
       const bPromo = b.set_type === 'promo' ? 1 : 0;
