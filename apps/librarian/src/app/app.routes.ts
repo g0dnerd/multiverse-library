@@ -9,7 +9,7 @@ export const appRoutes: Route[] = [
     component: FeatureRandomCardList,
   },
   {
-    path: 'keyword',
+    path: 'keywords',
     component: FeatureCuratedCardList,
   },
 ];
