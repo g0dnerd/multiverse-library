@@ -15,6 +15,6 @@ export class FeatureCuratedCardList implements OnInit {
   $isLoading = this.cardListStore.getCardsByKeywordLoading;
 
   ngOnInit() {
-    this.cardListStore.getCardsByKeyword(['flying', 'vigilance']);
+    this.cardListStore.getCardsByKeyword(['Flying', 'Lifelink']);
   }
 }

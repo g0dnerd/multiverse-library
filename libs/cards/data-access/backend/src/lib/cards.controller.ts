@@ -31,6 +31,7 @@ export class CardsController {
           hasEvery: keywords,
         },
       },
+      take: 20,
       select: {
         name: true,
         isDoubleFaced: true,
