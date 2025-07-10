@@ -1,3 +1,30 @@
+@use '@angular/material' as mat;
+
+@font-face {
+  font-family: 'GeneralSans-Variable';
+  src: url('/fonts/GeneralSans-Variable.woff2') format('woff2'),
+    url('/fonts/GeneralSans-Variable.ttf') format('truetype');
+  font-weight: 200 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+html,
+body {
+  height: 100%;
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+      typography: 'GeneralSans-Variable',
+      density: 0,
+    )
+  );
+}
+body {
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
 .content {
   width: 100%;
   display: flex;
@@ -19,4 +46,10 @@
     border-radius: 4.75% / 3.5%;
     box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.5);
   }
+}
+
+.keyword-form {
+  width: 300px;
+  display: flex;
+  flex-flow: column wrap;
 }
