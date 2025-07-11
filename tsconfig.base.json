@@ -29,6 +29,7 @@
       "@library/cards/data-access": [
         "libs/cards/data-access/backend/src/index.ts"
       ],
+      "@library/core/cache": ["libs/core/cache/src/index.ts"],
       "@library/prisma-client": ["libs/prisma-client/src/index.ts"],
       "@library/scryfall/data-access": [
         "libs/scryfall/data-access/src/index.ts"

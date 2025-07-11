@@ -1,15 +1,12 @@
 import {
   Controller,
   Get,
-  Inject,
   Param,
   ParseArrayPipe,
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Cache } from 'cache-manager';
 
 import { CardEntity } from '@multiverse-library/cards/data-access';
 import { CardsService } from './cards.service';
@@ -17,23 +14,17 @@ import { CardsService } from './cards.service';
 @Controller('cards')
 @ApiTags('cards')
 export class CardsController {
-  private readonly ttl = 24 * 60 * 60 * 1000;
-  constructor(
-    private readonly cardsService: CardsService,
-    @Inject(CACHE_MANAGER) private cache: Cache
-  ) {}
+  constructor(private readonly cardsService: CardsService) {}
 
   @Get('by-keyword')
   @ApiOkResponse({ type: CardEntity, isArray: true })
-  async getCardsByKeyword(
+  getCardsByKeyword(
     @Query('keywords', new ParseArrayPipe({ items: String, separator: ',' }))
     keywords: string[]
   ) {
-    const cacheKey = 'kw' + keywords.join();
-    let data = await this.cache.get<CardEntity[]>(cacheKey);
-
-    if (!data) {
-      data = await this.cardsService.cards({
+    const cacheKey = `cards-byKeyword-${keywords.join()}`;
+    return this.cardsService.cards(
+      {
         where: {
           keywords: {
             hasEvery: keywords,
@@ -47,11 +38,9 @@ export class CardsController {
           backFaceImg: true,
           keywords: true,
         },
-      });
-      await this.cache.set<CardEntity[]>(cacheKey, data, this.ttl);
-    }
-
-    return data;
+      },
+      cacheKey
+    );
   }
 
   @Get('random/:amount')
@@ -62,12 +51,10 @@ export class CardsController {
 
   @Get('search/:searchString')
   @ApiOkResponse({ type: CardEntity, isArray: true })
-  async getFilteredCards(@Param('searchString') searchString: string) {
-    const cacheKey = 'name-' + searchString;
-    let data = await this.cache.get<CardEntity[]>(cacheKey);
-
-    if (!data) {
-      data = await this.cardsService.cards({
+  getFilteredCards(@Param('searchString') searchString: string) {
+    const cacheKey = `card-byName-${searchString}`;
+    return this.cardsService.cards(
+      {
         where: {
           name: {
             contains: searchString,
@@ -80,26 +67,15 @@ export class CardsController {
           backFaceImg: true,
           keywords: true,
         },
-      });
-      await this.cache.set<CardEntity[]>(cacheKey, data, this.ttl);
-    }
-
-    return data;
+      },
+      cacheKey
+    );
   }
 
   @Get(':id')
   @ApiOkResponse({ type: CardEntity })
-  async getCardById(@Param('id', ParseIntPipe) id: number) {
-    const cacheKey = 'id-' + id;
-    let data = await this.cache.get<CardEntity>(cacheKey);
-
-    if (!data) {
-      const res = await this.cardsService.card({ id });
-      if (res) {
-        data = res;
-        await this.cache.set<CardEntity>(cacheKey, data, this.ttl);
-      }
-    }
-    return data;
+  getCardById(@Param('id', ParseIntPipe) id: number) {
+    const cacheKey = `card-byId-${id}`;
+    return this.cardsService.card({ id }, cacheKey);
   }
 }
