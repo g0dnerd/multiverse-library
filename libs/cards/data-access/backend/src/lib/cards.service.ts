@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService, Prisma } from '@library/prisma-client';
 import { shuffle } from './shuffle';
+import { CardEntity } from '@multiverse-library/cards/data-access';
 
 @Injectable()
 export class CardsService {
@@ -19,7 +20,7 @@ export class CardsService {
     where?: Prisma.CardWhereInput;
     orderBy?: Prisma.CardOrderByWithRelationInput;
     select?: Prisma.CardSelect;
-  }) {
+  }): Promise<CardEntity[]> {
     return this.prisma.card.findMany(params);
   }
 
