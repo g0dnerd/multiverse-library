@@ -17,6 +17,7 @@ import { AppController } from './app.controller';
     CardDataAccessModule,
     ScryfallModule,
     CacheModule.registerAsync({
+      isGlobal: true,
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const host = configService.get<string>('REDIS_HOST');
