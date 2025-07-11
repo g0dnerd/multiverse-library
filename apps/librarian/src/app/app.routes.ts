@@ -5,11 +5,11 @@ import { FeatureCuratedCardList } from '@librarian/cards/feature-curated-card-li
 
 export const appRoutes: Route[] = [
   {
-    path: 'random',
-    component: FeatureRandomCardList,
+    path: '',
+    component: FeatureCuratedCardList,
   },
   {
-    path: 'keywords',
-    component: FeatureCuratedCardList,
+    path: 'random',
+    component: FeatureRandomCardList,
   },
 ];
