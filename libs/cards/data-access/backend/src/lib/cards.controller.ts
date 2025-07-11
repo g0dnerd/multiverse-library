@@ -1,23 +1,26 @@
 import {
   Controller,
   Get,
+  Inject,
   Param,
   ParseArrayPipe,
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Cache } from 'cache-manager';
 
 import { CardEntity } from '@multiverse-library/cards/data-access';
-import { CacheService } from '@library/core/cache';
 import { CardsService } from './cards.service';
 
 @Controller('cards')
 @ApiTags('cards')
 export class CardsController {
+  private readonly ttl = 24 * 60 * 60 * 1000;
   constructor(
     private readonly cardsService: CardsService,
-    private readonly cache: CacheService
+    @Inject(CACHE_MANAGER) private cache: Cache
   ) {}
 
   @Get('by-keyword')
@@ -45,7 +48,7 @@ export class CardsController {
           keywords: true,
         },
       });
-      await this.cache.set<CardEntity[]>(cacheKey, data, '24h');
+      await this.cache.set<CardEntity[]>(cacheKey, data, this.ttl);
     }
 
     return data;
@@ -78,7 +81,7 @@ export class CardsController {
           keywords: true,
         },
       });
-      await this.cache.set<CardEntity[]>(cacheKey, data, '24h');
+      await this.cache.set<CardEntity[]>(cacheKey, data, this.ttl);
     }
 
     return data;
@@ -94,7 +97,7 @@ export class CardsController {
       const res = await this.cardsService.card({ id });
       if (res) {
         data = res;
-        await this.cache.set<CardEntity>(cacheKey, data, '24h');
+        await this.cache.set<CardEntity>(cacheKey, data, this.ttl);
       }
     }
     return data;
