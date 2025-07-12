@@ -48,8 +48,10 @@ export class CardsService {
     const count = await this.prisma.card.count({ where: params.where });
 
     if (!cacheKey) {
+      const cards = await this.prisma.card.findMany(params);
       return {
-        cards: await this.prisma.card.findMany(params),
+        cards,
+        cursor: cards[cards.length - 1].id,
         count,
       };
     }
@@ -57,8 +59,10 @@ export class CardsService {
     const cachedCards = await this.cache.get<CardEntity[]>(cacheKey);
     if (cachedCards) {
       this.logger.log(`Found data in cache for ${cacheKey}.`);
+      const cursor = cachedCards[cachedCards.length - 1].id;
       return {
         cards: cachedCards,
+        cursor,
         count,
       };
     }
@@ -70,6 +74,7 @@ export class CardsService {
     if (params.take && count <= params.take) {
       return { cards, count };
     }
+
     const cursor = cards[cards.length - 1].id;
     return { cards, cursor, count };
   }
