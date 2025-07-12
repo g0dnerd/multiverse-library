@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   ParseArrayPipe,
+  ParseBoolPipe,
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
@@ -18,11 +19,16 @@ export class CardsController {
 
   @Get('by-keyword')
   @ApiOkResponse({ type: CardEntity, isArray: true })
-  getCardsByKeyword(
+  async getCardsByKeyword(
     @Query('keywords', new ParseArrayPipe({ items: String, separator: ',' }))
-    keywords: string[]
+    keywords: string[],
+    @Query('backwards', ParseBoolPipe) backwards: boolean,
+    @Query('cursor', new ParseIntPipe({ optional: true })) cursorId?: number
   ) {
     const cacheKey = `cards-byKeyword-${keywords.join()}`;
+    const skip = cursorId ? 1 : undefined;
+    const cursor = cursorId ? { id: cursorId } : undefined;
+
     return this.cardsService.cards(
       {
         where: {
@@ -30,7 +36,9 @@ export class CardsController {
             hasEvery: keywords,
           },
         },
-        take: 20,
+        take: backwards ? -16 : 16,
+        skip,
+        cursor,
         select: {
           name: true,
           isDoubleFaced: true,
@@ -38,6 +46,7 @@ export class CardsController {
           backFaceImg: true,
           keywords: true,
         },
+        orderBy: { id: 'asc' },
       },
       cacheKey
     );

@@ -12,4 +12,9 @@
   <lib-card-list-item [card]="card" />
   }
 </div>
+<lib-paginator
+  [count]="$cards().length"
+  [total]="$count()"
+  (pageChanged)="handlePageChange($event)"
+/>
 }

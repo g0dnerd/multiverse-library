@@ -1,0 +1,11 @@
+<mat-paginator
+  #paginator
+  class="card-list-paginator"
+  (page)="handlePageEvent($event)"
+  [length]="total()"
+  [pageSize]="pageSize"
+  [pageSizeOptions]="[]"
+  [pageIndex]="pageIndex"
+  [showFirstLastButtons]="false"
+  aria-label="Select page"
+></mat-paginator>

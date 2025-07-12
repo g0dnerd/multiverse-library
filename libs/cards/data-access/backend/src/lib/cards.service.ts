@@ -44,32 +44,46 @@ export class CardsService {
       select?: Prisma.CardSelect;
     },
     cacheKey?: string
-  ): Promise<CardEntity[]> {
+  ): Promise<{ cards: CardEntity[]; cursor?: number; count: number }> {
+    const count = await this.prisma.card.count({ where: params.where });
+
     if (!cacheKey) {
-      return this.prisma.card.findMany(params);
+      return {
+        cards: await this.prisma.card.findMany(params),
+        count,
+      };
     }
 
     const cachedCards = await this.cache.get<CardEntity[]>(cacheKey);
     if (cachedCards) {
       this.logger.log(`Found data in cache for ${cacheKey}.`);
-      return cachedCards;
+      return {
+        cards: cachedCards,
+        count,
+      };
     }
 
     this.logger.log(`Nothing in cache for ${cacheKey}, setting.`);
     const cards = await this.prisma.card.findMany(params);
     await this.cache.set(cacheKey, cards, this.ttl);
 
-    return cards;
+    if (params.take && count <= params.take) {
+      return { cards, count };
+    }
+    const cursor = cards[cards.length - 1].id;
+    return { cards, cursor, count };
   }
 
   // Returns the specified number of random cards
   async random(amount: number) {
     // NOTE: For our DB of ~35k cards, loading all into memory is still cheap enough,
     // since they are also indexed by ID.
-    const allCards = await this.prisma.card.findMany({
+    const allCards = await this.cards({
       select: { id: true },
     });
-    const ids = allCards.map((card) => card.id);
+
+    const cards = allCards.cards;
+    const ids = cards.map((card) => card.id);
 
     const picked = shuffle(ids).slice(0, amount);
 

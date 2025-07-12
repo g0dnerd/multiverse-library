@@ -29,6 +29,7 @@
       ],
       "@librarian/core/data-access": ["libs/core/data-access/src/index.ts"],
       "@librarian/core/http-client": ["libs/core/http-client/src/index.ts"],
+      "@librarian/core/paginator": ["libs/core/paginator/src/index.ts"],
       "@library/cards/data-access": [
         "libs/cards/data-access/backend/src/index.ts"
       ],

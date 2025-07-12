@@ -6,10 +6,9 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl =
-    'https://multiverse-library-production.up.railway.app/api';
   // private readonly apiUrl =
-  //   'https://localhost:3000/api';
+  //   'https://multiverse-library-production.up.railway.app/api';
+  private readonly apiUrl = 'http://localhost:3000/api';
 
   get headers(): HttpHeaders {
     const headersConfig = {

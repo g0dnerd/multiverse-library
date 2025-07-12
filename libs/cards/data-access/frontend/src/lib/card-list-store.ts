@@ -12,6 +12,7 @@ import {
 } from '@librarian/core/data-access';
 import { CardService } from './card-service';
 import { cardListInitialState, CardListState } from './card-state';
+import { CardListResponse } from './models/card-list-response';
 
 export const CardListStore = signalStore(
   { providedIn: 'root' },
@@ -22,19 +23,25 @@ export const CardListStore = signalStore(
         switchMap((amount) => {
           patchState(store, {
             cards: cardListInitialState.cards,
+            cursor: cardListInitialState.cursor,
+            count: cardListInitialState.count,
             ...setLoading('getRandomCards'),
           });
           return cardService.getRandomCards(amount).pipe(
             tapResponse({
-              next: (cards: CardEntity[]) => {
+              next: (res: CardListResponse) => {
                 patchState(store, {
-                  cards,
+                  cards: res.cards,
+                  cursor: null,
+                  count: res.count,
                   ...setLoaded('getRandomCards'),
                 });
               },
               error: () => {
                 patchState(store, {
                   cards: cardListInitialState.cards,
+                  cursor: cardListInitialState.cursor,
+                  count: cardListInitialState.count,
                   ...setLoaded('getRandomCards'),
                 });
               },
@@ -43,29 +50,38 @@ export const CardListStore = signalStore(
         })
       )
     ),
-    getCardsByKeyword: rxMethod<string[]>(
+    getCardsByKeyword: rxMethod<{
+      keywords: string[];
+      cursor?: number;
+      backwards: boolean;
+    }>(
       pipe(
-        switchMap((keywords) => {
+        switchMap(({ keywords, cursor, backwards }) => {
           patchState(store, {
             cards: cardListInitialState.cards,
+            cursor,
             ...setLoading('getCardsByKeyword'),
           });
-          return cardService.getCardsByKeyword(keywords).pipe(
-            tapResponse({
-              next: (cards: CardEntity[]) => {
-                patchState(store, {
-                  cards,
-                  ...setLoaded('getCardsByKeyword'),
-                });
-              },
-              error: () => {
-                patchState(store, {
-                  cards: cardListInitialState.cards,
-                  ...setLoaded('getCardsByKeyword'),
-                });
-              },
-            })
-          );
+          return cardService
+            .getCardsByKeyword(keywords, backwards, cursor)
+            .pipe(
+              tapResponse({
+                next: (res: CardListResponse) => {
+                  patchState(store, {
+                    cards: res.cards,
+                    cursor: res.cursor,
+                    ...setLoaded('getCardsByKeyword'),
+                  });
+                },
+                error: () => {
+                  patchState(store, {
+                    cards: cardListInitialState.cards,
+                    cursor: cardListInitialState.cursor,
+                    ...setLoaded('getCardsByKeyword'),
+                  });
+                },
+              })
+            );
         })
       )
     ),

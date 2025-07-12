@@ -10,8 +10,12 @@ export const cardInitialState: CardState = {
 
 export interface CardListState {
   cards: CardEntity[];
+  cursor: number | null;
+  count: number;
 }
 
 export const cardListInitialState: CardListState = {
   cards: [],
+  cursor: null,
+  count: 0,
 };
