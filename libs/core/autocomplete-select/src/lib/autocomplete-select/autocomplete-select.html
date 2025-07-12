@@ -1,0 +1,33 @@
+<form class="autocomplete-form">
+  <mat-form-field class="chip-list">
+    <mat-label>Filters</mat-label>
+    <mat-chip-grid #chipGrid aria-label="Keyword ability selection">
+      @for (op of selectedOptions(); track $index) {
+      <mat-chip-row (removed)="remove(op)">
+        {{op}}
+        <button matChipRemove [attr.aria-label]="'remove ' + op">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-row>
+      }
+    </mat-chip-grid>
+    <input
+      name="currentOption"
+      placeholder="Add Filter..."
+      #optionInput
+      [(ngModel)]="currentSelection"
+      [matChipInputFor]="chipGrid"
+      [matAutocomplete]="auto"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      (matChipInputTokenEnd)="add($event)"
+    />
+    <mat-autocomplete
+      #auto="matAutocomplete"
+      (optionSelected)="selected($event); optionInput.value = ''"
+    >
+      @for (op of filteredOptions(); track op) {
+      <mat-option [value]="op">{{op}}</mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+</form>

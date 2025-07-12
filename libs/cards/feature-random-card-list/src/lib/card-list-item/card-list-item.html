@@ -1,7 +1,26 @@
 <div class="card-preview">
   <div class="card-image">
-    @if (card().frontFaceImg; as imgSrc) {
-    <img [src]="imgSrc" />
+    <div class="card-image__inner" [class.flipped]="backFaceVisible">
+      <div class="card-image__face card-image__face--front">
+        @if (card().frontFaceImg; as imgSrc) {
+        <img [src]="imgSrc" class="card-image__img" />
+        }
+      </div>
+      @if (card().backFaceImg; as imgSrc) {
+      <div class="card-image__face card-image__face--back">
+        <img [src]="imgSrc" class="card-image__img" />
+      </div>
+      }
+    </div>
+    @if (card().isDoubleFaced) {
+    <button
+      matIconButton
+      aria-label="Button with a magnifying glass and arrows"
+      class="card-image__btn"
+      (click)="flip()"
+    >
+      <mat-icon>find_replace</mat-icon>
+    </button>
     }
   </div>
 </div>

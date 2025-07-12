@@ -9,9 +9,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       origin: [
-        'http://localhost',
         'https://library.paulkukowski.net',
         'https://multiverse-library-production.up.railway.app',
+        'http://localhost:4000',
       ],
       preflightContinue: false,
       maxAge: 3600,

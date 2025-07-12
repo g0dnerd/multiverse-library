@@ -52,7 +52,7 @@ export class CardsController {
   @Get('search/:searchString')
   @ApiOkResponse({ type: CardEntity, isArray: true })
   getFilteredCards(@Param('searchString') searchString: string) {
-    const cacheKey = `card-byName-${searchString}`;
+    const cacheKey = `card-byName-${searchString.replace(' ', '')}`;
     return this.cardsService.cards(
       {
         where: {

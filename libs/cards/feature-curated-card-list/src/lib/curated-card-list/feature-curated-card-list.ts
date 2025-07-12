@@ -1,38 +1,13 @@
-import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  model,
-  OnInit,
-  signal,
-} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import {
-  MatAutocompleteModule,
-  MatAutocompleteSelectedEvent,
-} from '@angular/material/autocomplete';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 
 import { CardListStore, KeywordListStore } from '@librarian/cards/data-access';
 import { CardListItem } from '@librarian/cards/feature-random-card-list';
+import { AutocompleteSelect } from '@librarian/core/autocomplete-select';
 
 @Component({
   selector: 'lib-curated-card-list',
-  imports: [
-    CardListItem,
-    MatAutocompleteModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatSelectModule,
-    FormsModule,
-  ],
+  imports: [AutocompleteSelect, CardListItem, MatSelectModule],
   templateUrl: './feature-curated-card-list.html',
 })
 export class FeatureCuratedCardList implements OnInit {
@@ -44,63 +19,8 @@ export class FeatureCuratedCardList implements OnInit {
   $isCardsLoading = this.cardListStore.getCardsByKeywordLoading;
   $isKeywordsLoading = this.keywordListStore.getKeywordAbilitiesLoading;
 
-  readonly separatorKeysCodes: number[] = [ENTER, COMMA];
-  readonly currentKeyword = model('');
-  readonly keywords = signal<string[]>([]);
-
-  readonly availableKeywords = computed(() => {
-    const selectedKeywords = this.keywords();
-    return this.$allKeywords().filter((k) => !selectedKeywords.includes(k));
-  });
-  readonly filteredKeywords = computed(() => {
-    const currentKeyword = this.currentKeyword().toLowerCase();
-    return currentKeyword
-      ? this.availableKeywords().filter((keyword) =>
-          keyword.toLowerCase().includes(currentKeyword)
-        )
-      : this.availableKeywords().slice();
-  });
-
-  readonly announcer = inject(LiveAnnouncer);
-
-  constructor() {
-    effect(() => {
-      this.updateCards(this.keywords());
-    });
-  }
-
   ngOnInit() {
     this.keywordListStore.getKeywordAbilities();
-  }
-
-  add(event: MatChipInputEvent): void {
-    const value = (event.value || '').trim();
-
-    if (value) {
-      this.keywords.update((keywords) => [...keywords, value]);
-    }
-
-    // Clear the input value
-    this.currentKeyword.set('');
-  }
-
-  remove(keyword: string): void {
-    this.keywords.update((keywords) => {
-      const index = keywords.indexOf(keyword);
-      if (index < 0) {
-        return keywords;
-      }
-
-      keywords.splice(index, 1);
-      this.announcer.announce(`Removed ${keyword}`);
-      return [...keywords];
-    });
-  }
-
-  selected(event: MatAutocompleteSelectedEvent): void {
-    this.keywords.update((keywords) => [...keywords, event.option.viewValue]);
-    this.currentKeyword.set('');
-    event.option.deselect();
   }
 
   updateCards(keywords: string[]) {

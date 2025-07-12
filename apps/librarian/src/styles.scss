@@ -38,16 +38,6 @@ body {
   margin: 0 16px;
 }
 
-.card-image {
-  img {
-    max-width: 210px;
-    object-fit: contain;
-    margin: 12px 12px;
-    border-radius: 4.75% / 3.5%;
-    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.5);
-  }
-}
-
 .form-container {
   width: 100vw;
 }
@@ -55,4 +45,13 @@ body {
 .chip-list {
   width: 50%;
   margin: 0 25%;
+}
+
+:root {
+  @include mat.icon-button-overrides(
+    (
+      icon-color: white,
+      ripple-color: #a1d2ce,
+    )
+  );
 }
