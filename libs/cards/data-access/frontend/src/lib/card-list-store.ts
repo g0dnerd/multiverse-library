@@ -60,6 +60,7 @@ export const CardListStore = signalStore(
           patchState(store, {
             cards: cardListInitialState.cards,
             cursor,
+            count: cardListInitialState.count,
             ...setLoading('getCardsByKeyword'),
           });
           return cardService
@@ -70,6 +71,7 @@ export const CardListStore = signalStore(
                   patchState(store, {
                     cards: res.cards,
                     cursor: res.cursor,
+                    count: res.count,
                     ...setLoaded('getCardsByKeyword'),
                   });
                 },
@@ -77,6 +79,7 @@ export const CardListStore = signalStore(
                   patchState(store, {
                     cards: cardListInitialState.cards,
                     cursor: cardListInitialState.cursor,
+                    count: cardListInitialState.count,
                     ...setLoaded('getCardsByKeyword'),
                   });
                 },
