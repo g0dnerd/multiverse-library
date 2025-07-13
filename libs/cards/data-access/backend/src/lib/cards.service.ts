@@ -69,7 +69,7 @@ export class CardsService {
       return { cards, count };
     }
 
-    const cursor = cards[cards.length - 1].id;
+    const cursor = cards.length > 0 ? cards[cards.length - 1].id : undefined;
     return { cards, cursor, count };
   }
 
