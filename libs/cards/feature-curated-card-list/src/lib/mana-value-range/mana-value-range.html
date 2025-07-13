@@ -1,0 +1,12 @@
+<div class="range-slider-label">
+  <label id="range-slider-label-name" class="range-slider-label__name"
+    >Mana Value</label
+  >
+  <label class="range-slider-label__value"
+    >{{ minSlider.value }} - {{ maxSlider.value }}</label
+  >
+</div>
+<mat-slider min="0" max="16" discrete #slider>
+  <input value="1" matSliderStartThumb [(ngModel)]="minValue" #minSlider />
+  <input value="6" matSliderEndThumb [(ngModel)]="maxValue" #maxSlider />
+</mat-slider>

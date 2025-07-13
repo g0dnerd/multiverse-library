@@ -1,10 +1,13 @@
 <div class="form-container">
-  @if (!$isKeywordsLoading()) {
-  <lib-autocomplete-select
-    [allOptions]="$allKeywordsTransformed()"
-    [optionName]="'Keyword'"
-    (userSelection)="updateCards($event)"
-  />
+  @if ($isKeywordsLoaded()) {
+  <form class="filter-form">
+    <lib-autocomplete-select
+      [allOptions]="$allKeywordsTransformed()"
+      [optionName]="'Keyword'"
+      (userSelection)="updateCards($event)"
+    />
+    <lib-mana-value-range></lib-mana-value-range>
+  </form>
   }
 </div>
 @if (!$isCardsLoading()) {

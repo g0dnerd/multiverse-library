@@ -36,8 +36,9 @@ body {
 
 .content {
   width: 100%;
+  height: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .card-preview-list {
@@ -47,11 +48,34 @@ body {
   margin: 0 16px;
 }
 
-.form-container {
-  width: 100vw;
+lib-curated-card-list {
+  height: 100%;
+  width: 100%;
+  display: grid;
+}
+
+lib-autocomplete-select {
+  width: 100%;
+}
+
+.filter-form {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: flex-start;
+  width: 90%;
 }
 
 .chip-list {
-  width: 20%;
+  width: 100%;
   margin: 0 1rem;
+}
+
+.form-container {
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+
+.card-preview-list {
+  grid-column-start: 2;
+  grid-column-end: 10;
 }

@@ -94,8 +94,9 @@ export class ScryfallService {
               const data = cards
                 .filter((card) => this.isActualMagicCard(card))
                 .map((card) => this.mapFromScryfallToPrisma(card));
-              return this.prisma.card.updateMany({
+              return this.prisma.card.createMany({
                 data,
+                skipDuplicates: true,
               });
             }),
             // Retry failed batches twice after 1000 and 3000 ms.
