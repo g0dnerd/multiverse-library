@@ -45,7 +45,7 @@ export class CardsService {
       cards = await this.prisma.card.findMany(params);
       return {
         cards,
-        cursor: cards[cards.length - 1].id,
+        cursor: cards.length > 0 ? cards[cards.length - 1].id : undefined,
         count,
       };
     }
@@ -53,7 +53,10 @@ export class CardsService {
     const cachedCards = await this.cache.get<CardEntity[]>(cacheKey);
     if (cachedCards) {
       this.logger.log(`Found data in cache for ${cacheKey}.`);
-      const cursor = cachedCards[cachedCards.length - 1].id;
+      const cursor =
+        cachedCards.length > 0
+          ? cachedCards[cachedCards.length - 1].id
+          : undefined;
       return {
         cards: cachedCards,
         cursor,
