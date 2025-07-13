@@ -1,15 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { API_URL } from './api-url-token';
 import { Observable } from 'rxjs';
+
+import { APP_CONFIG } from './api-url-injection-token';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  // private readonly apiUrl =
-  //   'https://multiverse-library-production.up.railway.app/api';
-  // private readonly apiUrl = 'http://localhost:3000/api';
-  private readonly apiUrl = inject(API_URL);
+  private readonly apiUrl = inject(APP_CONFIG).apiUrl;
 
   constructor() {
     console.log('API Core Service has API URL', this.apiUrl);

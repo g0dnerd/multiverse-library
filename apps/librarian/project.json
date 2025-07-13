@@ -57,7 +57,13 @@
       "executor": "@angular/build:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "librarian:build:production"
+          "buildTarget": "librarian:build:production",
+          "fileReplacements": [
+            {
+              "replace": "apps/librarian/src/environments/environment.ts",
+              "with": "apps/librarian/src/environments/environment.prod.ts"
+            }
+          ]
         },
         "development": {
           "buildTarget": "librarian:build:development"
