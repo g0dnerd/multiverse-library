@@ -373,7 +373,10 @@ export class ScryfallService {
   getKeywordAbilities() {
     return this.http
       .get(`${this.scryfallApiUrl}/catalog/keyword-abilities`)
-      .pipe(map((res: AxiosResponse<Catalog>) => res.data.data));
+      .pipe(
+        map((res: AxiosResponse<Catalog>) => res.data.data),
+        map((keywords) => keywords.map((k) => k.toLowerCase()))
+      );
   }
 
   // Maps a Scryfall card object into a database-friendly type to create a card.
@@ -387,12 +390,15 @@ export class ScryfallService {
       if (actualFaces.length === 2) isDoubleFaced = true;
     }
 
+    const keywords = card.keywords
+      ? card.keywords.map((k) => k.toLowerCase())
+      : card.keywords;
     return {
       name: card.name,
       scryfallId: card.id,
       isDoubleFaced,
       printsSearchUri: card.prints_search_uri,
-      keywords: card.keywords,
+      keywords,
       manaValue: card.cmc,
       colors: card.colors,
     };

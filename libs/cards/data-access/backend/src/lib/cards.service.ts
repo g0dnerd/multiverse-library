@@ -35,20 +35,14 @@ export class CardsService {
 
   // Generic getter that can be wrapped in the service or the controller.
   async cards(
-    params: {
-      skip?: number;
-      take?: number;
-      cursor?: Prisma.CardWhereUniqueInput;
-      where?: Prisma.CardWhereInput;
-      orderBy?: Prisma.CardOrderByWithRelationInput;
-      select?: Prisma.CardSelect;
-    },
+    params: Prisma.CardFindManyArgs,
     cacheKey?: string
   ): Promise<{ cards: CardEntity[]; cursor?: number; count: number }> {
     const count = await this.prisma.card.count({ where: params.where });
+    let cards: CardEntity[];
 
     if (!cacheKey) {
-      const cards = await this.prisma.card.findMany(params);
+      cards = await this.prisma.card.findMany(params);
       return {
         cards,
         cursor: cards[cards.length - 1].id,
@@ -67,8 +61,8 @@ export class CardsService {
       };
     }
 
-    this.logger.log(`Nothing in cache for ${cacheKey}, setting.`);
-    const cards = await this.prisma.card.findMany(params);
+    this.logger.log(`Found no cached data for ${cacheKey}, setting it.`);
+    cards = await this.prisma.card.findMany(params);
     await this.cache.set(cacheKey, cards, this.ttl);
 
     if (params.take && count <= params.take) {
@@ -79,19 +73,63 @@ export class CardsService {
     return { cards, cursor, count };
   }
 
+  query(
+    cacheKey: string,
+    backwards: boolean,
+    skip?: number,
+    cursor?: Prisma.CardWhereUniqueInput,
+    kw?: string[],
+    manaValueMin?: number,
+    manaValueMax?: number
+  ) {
+    if (kw) kw = kw.map((k) => k.toLowerCase());
+    const keywords = kw ? { hasEvery: kw } : undefined;
+    const manaValue =
+      manaValueMin || manaValueMax
+        ? { gt: manaValueMin, lt: manaValueMax }
+        : undefined;
+    const params: Prisma.CardFindManyArgs = {
+      where: {
+        keywords,
+        manaValue,
+      },
+      select: {
+        id: true,
+        name: true,
+        isDoubleFaced: true,
+        frontFaceImg: true,
+        backFaceImg: true,
+        keywords: true,
+      },
+      orderBy: { id: 'asc' },
+      take: backwards ? -16 : 16,
+      skip,
+      cursor,
+    };
+
+    this.logger.log('Query with params', JSON.stringify(params));
+
+    return this.cards(params, cacheKey);
+  }
+
   // Returns the specified number of random cards
   async random(amount: number) {
     // NOTE: For our DB of ~35k cards, loading all into memory is still cheap enough,
     // since they are also indexed by ID.
-    const allCards = await this.cards({
+    const allCardsRes = await this.cards({
       select: { id: true },
     });
 
-    const cards = allCards.cards;
-    const ids = cards.map((card) => card.id);
+    const allCards = allCardsRes.cards;
+    const ids = allCards.map((card) => card.id);
 
     const picked = shuffle(ids).slice(0, amount);
 
-    return this.prisma.card.findMany({ where: { id: { in: picked } } });
+    const cards = await this.prisma.card.findMany({
+      where: { id: { in: picked } },
+    });
+    return {
+      cards,
+    };
   }
 }

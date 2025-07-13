@@ -20,6 +20,10 @@ import KeyvRedis from '@keyv/redis';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const redisUrl = configService.get<string>('REDIS_URL');
+        if (!redisUrl) {
+          return {};
+        }
+        console.log('Bootstrapping with Redis URL', redisUrl);
         return {
           stores: [new KeyvRedis(redisUrl)],
         };

@@ -1,7 +1,7 @@
 <form class="autocomplete-form">
   <mat-form-field class="chip-list">
-    <mat-label>Filters</mat-label>
-    <mat-chip-grid #chipGrid aria-label="Keyword ability selection">
+    <mat-label>{{ optionName() }} filter</mat-label>
+    <mat-chip-grid #chipGrid [attr.aria-label]="optionName() + ' selection'">
       @for (op of selectedOptions(); track $index) {
       <mat-chip-row (removed)="remove(op)">
         {{op}}
@@ -13,7 +13,7 @@
     </mat-chip-grid>
     <input
       name="currentOption"
-      placeholder="Add Filter..."
+      [placeholder]="'Add ' + optionName() + '...'"
       #optionInput
       [(ngModel)]="currentSelection"
       [matChipInputFor]="chipGrid"

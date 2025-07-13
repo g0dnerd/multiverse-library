@@ -1,12 +1,11 @@
 <div class="card-preview">
   <div class="card-image">
     <div class="card-image__inner" [class.flipped]="backFaceVisible">
+      @if (card().frontFaceImg; as imgSrc) {
       <div class="card-image__face card-image__face--front">
-        @if (card().frontFaceImg; as imgSrc) {
         <img [src]="imgSrc" class="card-image__img" />
-        }
       </div>
-      @if (card().backFaceImg; as imgSrc) {
+      } @if (card().backFaceImg; as imgSrc) {
       <div class="card-image__face card-image__face--back">
         <img [src]="imgSrc" class="card-image__img" />
       </div>

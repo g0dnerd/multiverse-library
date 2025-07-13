@@ -17,6 +17,49 @@ import { CardsService } from './cards.service';
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
+  /**
+   * Allows any number of query filters and finds all cards that meet all of them.
+   */
+  @Get('search')
+  @ApiOkResponse({ type: CardEntity, isArray: true })
+  async getCardsBySearchQuery(
+    @Query('backwards', ParseBoolPipe) backwards: boolean,
+    @Query(
+      'keywords',
+      new ParseArrayPipe({ items: String, separator: ',', optional: true })
+    )
+    keywords?: string[],
+    @Query('mana-value-min', new ParseIntPipe({ optional: true }))
+    manaValueMin?: number,
+    @Query('mana-value-max', new ParseIntPipe({ optional: true }))
+    manaValueMax?: number,
+    @Query('cursor', new ParseIntPipe({ optional: true })) cursorId?: number
+  ) {
+    const keywordKey = keywords ? `-keywords${keywords.join()}` : '';
+    const mvMinKey = manaValueMin ? `-mvMin${manaValueMin}` : '';
+    const mvMaxKey = manaValueMax ? `-mvMax${manaValueMax}` : '';
+
+    let cacheKey = 'cards-query-';
+    cacheKey += backwards ? 'b-' : 'f-';
+    cacheKey += cursorId ? `${cursorId}` : '-1';
+    cacheKey += keywordKey;
+    cacheKey += mvMinKey;
+    cacheKey += mvMaxKey;
+
+    const skip = cursorId ? 1 : undefined;
+    const cursor = cursorId ? { id: cursorId } : undefined;
+
+    return this.cardsService.query(
+      cacheKey,
+      backwards,
+      skip,
+      cursor,
+      keywords,
+      manaValueMin,
+      manaValueMax
+    );
+  }
+
   @Get('by-keyword')
   @ApiOkResponse({ type: CardEntity, isArray: true })
   async getCardsByKeyword(
@@ -25,7 +68,9 @@ export class CardsController {
     @Query('backwards', ParseBoolPipe) backwards: boolean,
     @Query('cursor', new ParseIntPipe({ optional: true })) cursorId?: number
   ) {
-    const cacheKey = `cards-byKeyword-${keywords.join()}`;
+    const cacheKey = `cards-byKeyword-${backwards ? 'b' : 'f'}-${
+      cursorId ? cursorId : '-1'
+    }-${keywords.join()}`;
     const skip = cursorId ? 1 : undefined;
     const cursor = cursorId ? { id: cursorId } : undefined;
 
@@ -40,6 +85,7 @@ export class CardsController {
         skip,
         cursor,
         select: {
+          id: true,
           name: true,
           isDoubleFaced: true,
           frontFaceImg: true,

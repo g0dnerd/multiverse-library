@@ -1,7 +1,8 @@
 <div class="form-container">
   @if (!$isKeywordsLoading()) {
   <lib-autocomplete-select
-    [allOptions]="$allKeywords()"
+    [allOptions]="$allKeywordsTransformed()"
+    [optionName]="'Keyword'"
     (userSelection)="updateCards($event)"
   />
   }
@@ -12,9 +13,11 @@
   <lib-card-list-item [card]="card" />
   }
 </div>
+} @if ($isCardsLoaded()) {
 <lib-paginator
   [count]="$cards().length"
   [total]="$count()"
+  [pageIndex]="pageIdx"
   (pageChanged)="handlePageChange($event)"
 />
 }

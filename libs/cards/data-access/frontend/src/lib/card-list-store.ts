@@ -59,32 +59,29 @@ export const CardListStore = signalStore(
         switchMap(({ keywords, cursor, backwards }) => {
           patchState(store, {
             cards: cardListInitialState.cards,
-            cursor,
             count: cardListInitialState.count,
             ...setLoading('getCardsByKeyword'),
           });
-          return cardService
-            .getCardsByKeyword(keywords, backwards, cursor)
-            .pipe(
-              tapResponse({
-                next: (res: CardListResponse) => {
-                  patchState(store, {
-                    cards: res.cards,
-                    cursor: res.cursor,
-                    count: res.count,
-                    ...setLoaded('getCardsByKeyword'),
-                  });
-                },
-                error: () => {
-                  patchState(store, {
-                    cards: cardListInitialState.cards,
-                    cursor: cardListInitialState.cursor,
-                    count: cardListInitialState.count,
-                    ...setLoaded('getCardsByKeyword'),
-                  });
-                },
-              })
-            );
+          return cardService.getCardsByQuery(backwards, keywords, cursor).pipe(
+            tapResponse({
+              next: (res: CardListResponse) => {
+                patchState(store, {
+                  cards: res.cards,
+                  cursor: res.cursor,
+                  count: res.count,
+                  ...setLoaded('getCardsByKeyword'),
+                });
+              },
+              error: () => {
+                patchState(store, {
+                  cards: cardListInitialState.cards,
+                  cursor: cardListInitialState.cursor,
+                  count: cardListInitialState.count,
+                  ...setLoaded('getCardsByKeyword'),
+                });
+              },
+            })
+          );
         })
       )
     ),

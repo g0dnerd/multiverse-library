@@ -21,19 +21,30 @@ export class CardService {
     );
   }
 
-  getCardsByKeyword(
-    keywords: string[],
+  getCardsByQuery(
     backwards: boolean,
+    keywords?: string[],
+    manaValueMin?: number,
+    manaValueMax?: number,
     cursor?: number
   ): Observable<CardListResponse> {
     let params = new HttpParams();
-    params = params.append('keywords', keywords.join(','));
+
+    params = params.append('backwards', backwards);
+    if (keywords) {
+      params = params.append('keywords', keywords.join(','));
+    }
+    if (manaValueMin) {
+      params = params.append('mana-value-min', manaValueMin);
+    }
+    if (manaValueMax) {
+      params = params.append('mana-value-max', manaValueMax);
+    }
     if (cursor) {
       params = params.append('cursor', cursor);
     }
-    params = params.append('backwards', backwards);
     return this.apiService.get<CardListResponse>(
-      `${this.apiSuffix}/by-keyword`,
+      `${this.apiSuffix}/search`,
       params
     );
   }

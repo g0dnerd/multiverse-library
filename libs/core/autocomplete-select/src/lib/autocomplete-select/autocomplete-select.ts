@@ -19,6 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { FormsModule } from '@angular/forms';
+import { TitleCasePipe } from '@angular/common';
 
 @Component({
   selector: 'lib-autocomplete-select',
@@ -31,10 +32,14 @@ import { FormsModule } from '@angular/forms';
     FormsModule,
   ],
   templateUrl: './autocomplete-select.html',
+  providers: [TitleCasePipe],
 })
 export class AutocompleteSelect {
   allOptions = input.required<string[]>();
+  optionName = input.required<string>();
   userSelection = output<string[]>();
+
+  private readonly titleCasePipe = inject(TitleCasePipe);
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   readonly announcer = inject(LiveAnnouncer);
@@ -61,9 +66,9 @@ export class AutocompleteSelect {
   }
 
   add(event: MatChipInputEvent): void {
-    const value = (event.value || '').trim();
+    const value = this.titleCasePipe.transform((event.value || '').trim());
 
-    if (value) {
+    if (value && this.availableOptions().includes(value)) {
       this.selectedOptions.update((options) => [...options, value]);
     }
 

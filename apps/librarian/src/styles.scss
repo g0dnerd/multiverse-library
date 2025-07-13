@@ -9,6 +9,15 @@
   font-style: normal;
 }
 
+:root {
+  @include mat.icon-button-overrides(
+    (
+      icon-color: white,
+      ripple-color: #a1d2ce,
+    )
+  );
+}
+
 html,
 body {
   height: 100%;
@@ -43,15 +52,6 @@ body {
 }
 
 .chip-list {
-  width: 50%;
-  margin: 0 25%;
-}
-
-:root {
-  @include mat.icon-button-overrides(
-    (
-      icon-color: white,
-      ripple-color: #a1d2ce,
-    )
-  );
+  width: 20%;
+  margin: 0 1rem;
 }

@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { TitleCasePipe } from '@angular/common';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 
@@ -11,10 +12,14 @@ import { Paginator } from '@librarian/core/paginator';
   selector: 'lib-curated-card-list',
   imports: [AutocompleteSelect, CardListItem, MatSelectModule, Paginator],
   templateUrl: './feature-curated-card-list.html',
+  providers: [TitleCasePipe],
 })
 export class FeatureCuratedCardList implements OnInit {
   private readonly cardListStore = inject(CardListStore);
   private readonly keywordListStore = inject(KeywordListStore);
+  private readonly titleCasePipe = inject(TitleCasePipe);
+
+  pageIdx = 0;
 
   private keywords: string[] = [];
 
@@ -22,10 +27,15 @@ export class FeatureCuratedCardList implements OnInit {
   readonly $cursor = this.cardListStore.cursor;
   readonly $count = this.cardListStore.count;
   readonly $isCardsLoading = this.cardListStore.getCardsByKeywordLoading;
+  readonly $isCardsLoaded = this.cardListStore.getCardsByKeywordLoaded;
 
   readonly $allKeywords = this.keywordListStore.keywords;
   readonly $isKeywordsLoading =
     this.keywordListStore.getKeywordAbilitiesLoading;
+
+  readonly $allKeywordsTransformed = computed(() =>
+    this.$allKeywords().map((k) => this.titleCasePipe.transform(k))
+  );
 
   ngOnInit() {
     this.keywordListStore.getKeywordAbilities();
@@ -40,6 +50,7 @@ export class FeatureCuratedCardList implements OnInit {
 
   handlePageChange(e: PageEvent) {
     const pageIdx = e.pageIndex;
+    this.pageIdx = pageIdx;
     const prevPageIdx = e.previousPageIndex;
     const backwards = prevPageIdx && prevPageIdx > pageIdx ? true : false;
 
