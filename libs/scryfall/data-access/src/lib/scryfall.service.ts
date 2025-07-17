@@ -200,6 +200,65 @@ export class ScryfallService {
   }
 
   /**
+   * Queries the Scryfall API for the list of prints from a card's `printsSearchUri`.
+   * Writes the oldest available (e.g., the original) image URI for each card face into the DB.
+   */
+  async getCardsWithImageMissing() {
+    // Work in batches of 100 images
+    const pageSize = 100;
+    let lastId = 0;
+    let progress = 0;
+
+    // NOTE: The type is manually defined like this since Partial<Card> doesn't work
+    // with the `prisma.card.findMany` invocation. It's not nice though.
+    let page: { id: number; printsSearchUri: string; isDoubleFaced: boolean }[];
+
+    do {
+      // Find the next 100 cards, only select strictly necessary fields
+      page = await this.prisma.card.findMany({
+        where: {
+          id: { gt: lastId },
+          AND: {
+            frontFaceImg: null,
+            backFaceImg: null,
+          },
+        },
+        orderBy: { id: 'asc' },
+        take: pageSize,
+        select: { id: true, printsSearchUri: true, isDoubleFaced: true },
+      });
+
+      if (page.length === 0) break;
+
+      progress += page.length;
+
+      // For concurrency-limited HTTP+DB updates:
+      //   - turn the page into an Observable stream
+      //   - mergeMap with concurrency = 5
+      //   - toArray() to await the entire batch
+      await lastValueFrom(
+        from(page).pipe(
+          mergeMap(
+            (card) =>
+              this.enrichCardImages(
+                card.id,
+                card.printsSearchUri,
+                card.isDoubleFaced
+              ),
+            5
+          ),
+          catchError((err) => {
+            this.logger.error('Error enriching a card', err.stack);
+            return [];
+          }),
+          toArray()
+        )
+      );
+
+      lastId = page[page.length - 1].id;
+    } while (page.length === pageSize);
+  }
+  /**
    * Fetch the printsSearchUri, pick the last (oldest) element in the returned
    * array, grab its card faces' image_uris.small, and update the DB.
    */
@@ -208,8 +267,8 @@ export class ScryfallService {
     printsSearchUri: string,
     isDfc: boolean
   ) {
-    // 300 Millisecond delay to not blast the Scryfall API too much
-    const delay = 300;
+    // 350 Millisecond delay to not blast the Scryfall API too much
+    const delay = 350;
 
     return of(null).pipe(
       delayWhen(() => timer(delay)),

@@ -80,6 +80,11 @@ export class ScryfallController {
     return this.scryfallService.fetchCardsForEnrichment();
   }
 
+  @Post('add-missing')
+  addMissingCardImages() {
+    return this.scryfallService.getCardsWithImageMissing();
+  }
+
   @Post('sanitize')
   sanitizeCards() {
     return this.scryfallService.sanitizeCards();
