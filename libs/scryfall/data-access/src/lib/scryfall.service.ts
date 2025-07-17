@@ -410,6 +410,7 @@ export class ScryfallService {
    */
   private isActualMagicCard(card: ScryfallCard): boolean {
     return (
+      !card.type_line.includes('Token') &&
       card.set_type !== 'token' &&
       card.set_type !== 'memorabilia' &&
       card.set_type !== 'funny' &&
